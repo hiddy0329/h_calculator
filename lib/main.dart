@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'history_page.dart';
@@ -36,28 +37,91 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+//演算子をそれぞれenum値で定義する
+enum OPERATOR_TYPE {add, sub, multi, div, ini}
+
 class _MyHomePageState extends State<MyHomePage> {
+  // 値を格納する変数
   int _setNumber = 0;
+  // 値を表示する変数
+  int _displayedNumber = 0;
+  // 最初の値を保持する変数
+  int _firstNum = 0;
+
+  late OPERATOR_TYPE _operatorType;
+
 
   // 数値を画面に表示するメソッド
   void _setNum(int num) {
-    if (_setNumber < 10000000) {
-      if (num == 10) {
+    // _displayedNumber == _setNumber、つまり、表示値と格納値が同じならば。
+    if (_displayedNumber == _setNumber) {
+      if (10000000000 > _displayedNumber) {
         setState(() {
-          _setNumber = _setNumber * 100;
-        });
-      } else {
-        setState(() {
-          _setNumber = _setNumber * 10 + num;
+          _displayedNumber = _displayedNumber * 10 + num;
+          _setNumber = _displayedNumber;
         });
       }
+    // 表示値と格納値が違うなら、表示値は打ち込んだ値に更新する
+    } else {
+      setState(() {
+        _displayedNumber = num;
+        _setNumber = _displayedNumber;
+        _operatorType = OPERATOR_TYPE.ini;
+      });
     }
   }
+
+  // 押された演算子の種類の応じて_firstNumに_setNumberを格納するメソッド
+  void _operatorPressed(OPERATOR_TYPE type) {
+    // setStateを使用せず、レイアウトは変えずに、中身の値のみ変更する
+    _firstNum = _setNumber;
+    _setNumber = 0;
+    _displayedNumber = 0;
+    _operatorType = type;
+  }
+
+  // _operatorTypeが「add」なら足し算を実行するメソッド
+  void _add() {
+    setState(() {
+      _displayedNumber =  _firstNum + _setNumber;
+      _firstNum = _displayedNumber;
+    });
+  }
+
+  // _operatorTypeが「sub」なら引き算を実行するメソッド
+  void _sub() {
+    setState(() {
+      _displayedNumber = _firstNum - _setNumber; 
+      _firstNum = _displayedNumber;
+    });
+  }
+
+  // _operatorTypeが「multi」なら掛け算を実行するメソッド
+  void _multi() {
+    setState(() {
+      _displayedNumber = _firstNum * _setNumber; 
+      _firstNum = _displayedNumber;
+    });
+  }
+
+  // _operatorTypeが「div」なら割り算を実行するメソッド
+  void _div() {
+    setState(() {
+      // _displayedNumber = _firstNum / _setNumber; 
+      _firstNum = _displayedNumber;
+    });
+  }
+
+
 
   // 画面上の数値をオールクリアするメソッド
   void _clearNum() {
     setState(() {
       _setNumber = 0;
+      _displayedNumber = 0;
+      _firstNum = 0;
+      // _operatorTypeも初期化したい
+      _operatorType = OPERATOR_TYPE.ini;
     });
   }
 
@@ -129,7 +193,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 flex: 1,
                 child: Text(
                   // _setNumberを文字列に変換して出力
-                  _setNumber.toString(),
+                  _displayedNumber.toString(),
                   style: TextStyle(
                     fontSize: 80,
                     color: Colors.white,
@@ -226,7 +290,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ),
                                   color: Colors.orange,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _operatorPressed(OPERATOR_TYPE.div);
+                                  },
                                   child: Text(
                                     "÷",
                                     textAlign: TextAlign.center,
@@ -327,7 +393,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ),
                                   color: Colors.orange,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _operatorPressed(OPERATOR_TYPE.multi);
+                                  },
                                   child: Text(
                                     "×",
                                     textAlign: TextAlign.center,
@@ -428,7 +496,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ),
                                   color: Colors.orange,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _operatorPressed(OPERATOR_TYPE.sub);
+                                  },
                                   child: Text(
                                     "-",
                                     textAlign: TextAlign.center,
@@ -530,7 +600,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.orange,
                                   onPressed: () {
-                                    _setElements(_setNumber);
+                                    _operatorPressed(OPERATOR_TYPE.add);
                                   },
                                   child: Text(
                                     "+",
@@ -631,7 +701,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.orange,
                                   onPressed: () {
-                                    _calculation(_setNumber);
+                                    switch(_operatorType) {
+                                      case OPERATOR_TYPE.add:
+                                        _add();
+                                        break;
+                                      case OPERATOR_TYPE.sub:
+                                        _sub();
+                                        break;
+                                      case OPERATOR_TYPE.multi:
+                                        _multi();
+                                        break;
+                                      case OPERATOR_TYPE.div:
+                                        _div();
+                                        break;
+                                      case OPERATOR_TYPE.ini:
+                                        break;
+                                      default:
+                                        break;
+                                    }
                                   },
                                   child: Text(
                                     "=",
@@ -653,5 +740,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           )),
     );
+  }
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(EnumProperty<OPERATOR_TYPE>('_operatorType', _operatorType));
   }
 }
