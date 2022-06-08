@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'history_page.dart';
+import 'dart:math' as Math; 
 
 // アプリを立ち上げ、MyAppクラスを呼び出す
 void main() {
@@ -42,20 +43,21 @@ enum OPERATOR_TYPE {add, sub, multi, div, ini}
 
 class _MyHomePageState extends State<MyHomePage> {
   // 値を格納する変数
-  int _setNumber = 0;
+  double _setNumber = 0;
   // 値を表示する変数
-  int _displayedNumber = 0;
+  double _displayedNumber = 0;
   // 最初の値を保持する変数
-  int _firstNum = 0;
+  double _firstNum = 0;
 
   late OPERATOR_TYPE _operatorType;
 
 
   // 数値を画面に表示するメソッド
-  void _setNum(int num) {
+  void _setNum(double num) {
+    const _maxValueNumber = 10000000;
     // _displayedNumber == _setNumber、つまり、表示値と格納値が同じならば。
     if (_displayedNumber == _setNumber) {
-      if (10000000000 > _displayedNumber) {
+      if (_displayedNumber < _maxValueNumber) {
         setState(() {
           _displayedNumber = _displayedNumber * 10 + num;
           _setNumber = _displayedNumber;
@@ -107,9 +109,32 @@ class _MyHomePageState extends State<MyHomePage> {
   // _operatorTypeが「div」なら割り算を実行するメソッド
   void _div() {
     setState(() {
-      // _displayedNumber = _firstNum / _setNumber; 
+      _displayedNumber = _firstNum / _setNumber; 
       _firstNum = _displayedNumber;
     });
+  }
+
+  void checkDecimal() {
+    double checkNum = _displayedNumber;
+    if (1000000000 < _displayedNumber || _displayedNumber == _displayedNumber.toInt()) {
+      int count;
+      for(int i = 0; 1000000000 < _displayedNumber / Math.pow(10, i); i++) {
+        count = i;
+        checkNum = checkNum / 10;
+      }
+      setState(() {
+        _displayedNumber = checkNum;
+      });
+    }
+    else {
+      int count = 0;
+      for(int i = 0; 1 < _displayedNumber / Math.pow(10, i); i++) {
+        count = i;
+      }
+      int displayCount = 10 - count;
+      _displayedNumber = double.parse(_displayedNumber.toStringAsFixed(displayCount));
+
+    }
   }
 
 
@@ -125,27 +150,27 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  List<int> _calcElements = [];
-  // 演算子入力時に値をリストに格納するメソッド
-  void _setElements(int setNumber) {
-    setState(() {
-      _calcElements.add(_setNumber);
-      _setNum(_setNumber);
-      _clearNum();
-    });
-  }
+  // List<int> _calcElements = [];
+  // // 演算子入力時に値をリストに格納するメソッド
+  // void _setElements(int setNumber) {
+  //   setState(() {
+  //     _calcElements.add(_setNumber);
+  //     _setNum(_setNumber);
+  //     _clearNum();
+  //   });
+  // }
 
-  // 演算を実行するメソッド
-  void _calculation(int setNumber) {
-    setState(() {
-      for (int i = 0; i < _calcElements.length; i++) {
-        _setNumber += _calcElements[i];
-      }
-      // 次の演算に備え、クリア
-      _calcElements.clear();
-      // resultは出力後、初期化
-    });
-  }
+  // // 演算を実行するメソッド
+  // void _calculation(int setNumber) {
+  //   setState(() {
+  //     for (int i = 0; i < _calcElements.length; i++) {
+  //       _setNumber += _calcElements[i];
+  //     }
+  //     // 次の演算に備え、クリア
+  //     _calcElements.clear();
+  //     // resultは出力後、初期化
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -192,8 +217,10 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 flex: 1,
                 child: Text(
-                  // _setNumberを文字列に変換して出力
-                  _displayedNumber.toString(),
+                  // 表示値が整数値か小数点数かで表示方法を分岐する
+                  _displayedNumber == _displayedNumber.toInt() 
+                    ? _displayedNumber.toInt().toString()
+                    : _displayedNumber.toString(),
                   style: TextStyle(
                     fontSize: 80,
                     color: Colors.white,
