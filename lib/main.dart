@@ -48,9 +48,9 @@ class _MyHomePageState extends State<MyHomePage> {
   double _displayedNumber = 0;
   // 最初の値を保持する変数
   double _firstNum = 0;
+  bool _decimalFlag = false;
 
   late OPERATOR_TYPE _operatorType;
-
 
   // 数値を画面に表示するメソッド
   void _setNum(double num) {
@@ -59,7 +59,17 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_displayedNumber == _setNumber) {
       if (_displayedNumber < _maxValueNumber) {
         setState(() {
-          _displayedNumber = _displayedNumber * 10 + num;
+          if (!_decimalFlag) _displayedNumber = _displayedNumber * 10 + num;
+          else {
+            int count = 1;
+            for (int i = 0;
+            _displayedNumber * Math.pow(10, i) != (_displayedNumber * Math.pow(10, i)).ceil();
+            i++) {
+              count++;
+            }
+            _displayedNumber = double.parse((_displayedNumber + (num / Math.pow(10, count))).toStringAsFixed(count));
+            checkDecimal();
+          }
           _setNumber = _displayedNumber;
         });
       }
@@ -75,11 +85,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 押された演算子の種類の応じて_firstNumに_setNumberを格納するメソッド
   void _operatorPressed(OPERATOR_TYPE type) {
-    // setStateを使用せず、レイアウトは変えずに、中身の値のみ変更する
+    _setNumber = _displayedNumber;
     _firstNum = _setNumber;
     _setNumber = 0;
     _displayedNumber = 0;
     _operatorType = type;
+    _decimalFlag = false;
   }
 
   // _operatorTypeが「add」なら足し算を実行するメソッド
@@ -137,8 +148,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-
-
   // 画面上の数値をオールクリアするメソッド
   void _clearNum() {
     setState(() {
@@ -147,6 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _firstNum = 0;
       // _operatorTypeも初期化したい
       _operatorType = OPERATOR_TYPE.ini;
+      _decimalFlag = false;
     });
   }
 
@@ -682,30 +692,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(10);
+                                    _decimalFlag = true;
                                   },
-                                  child: Text(
-                                    "00",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {},
                                   child: Text(
                                     ".",
                                     textAlign: TextAlign.center,
