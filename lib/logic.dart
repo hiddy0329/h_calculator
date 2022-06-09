@@ -25,13 +25,13 @@ class Logic {
     } else {
       // 数値の入力
       if(_decimalFlag) {
-        // 「整数 + "."」のパターンの時
+        // 「整数 + "."」のパターンの時は入力された値を小数点数に変換して表示する
         _numAfterPoint++;
         _currentNumber = _currentNumber + int.parse(text) * Math.pow(0.1, _numAfterPoint);
-        // 「最初の0」のパターンの時
+        // 「最初の0」のパターンの時は入力された値をそのまま表示する
       } else if (_currentNumber == 0) {
         _currentNumber = double.parse(text);
-        // 「整数 + 整数」のパターンの時
+        // 「整数 + 整数」のパターンの時は続けて入力された値をそのまま表示する
       } else {
         _currentNumber = _currentNumber * 10 + double.parse(text);
       }
