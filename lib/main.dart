@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'history_page.dart';
-import 'dart:math' as Math; 
+import 'dart:math' as Math;
 
 // アプリを立ち上げ、MyAppクラスを呼び出す
 void main() {
@@ -39,55 +39,62 @@ class MyHomePage extends StatefulWidget {
 }
 
 //演算子をそれぞれenum値で定義する
-enum OPERATOR_TYPE {add, sub, multi, div, ini}
+enum OperatorType { add, sub, multi, div }
 
 class _MyHomePageState extends State<MyHomePage> {
   // 値を格納する変数
-  double _setNumber = 0;
+  double _setCurrentNumber = 0;
   // 値を表示する変数
   double _displayedNumber = 0;
   // 最初の値を保持する変数
   double _firstNum = 0;
+  // 小数点ボタンが押されたかどうかを示す変数
   bool _decimalFlag = false;
 
-  late OPERATOR_TYPE _operatorType;
+  OperatorType? _operatorType;
 
   // 数値を画面に表示するメソッド
-  void _setNum(double num) {
-    const _maxValueNumber = 10000000;
-    // _displayedNumber == _setNumber、つまり、表示値と格納値が同じならば。
-    if (_displayedNumber == _setNumber) {
-      if (_displayedNumber < _maxValueNumber) {
+  void _setCurrentNum(double num) {
+    const maxValueNumber = 100000000;
+    // _displayedNumber == _setCurrentNumber、つまり、表示値と格納値が同じならば以下の処理を行う
+    if (_displayedNumber == _setCurrentNumber) {
+      if (_displayedNumber < maxValueNumber) {
         setState(() {
-          if (!_decimalFlag) _displayedNumber = _displayedNumber * 10 + num;
+          // 小数点が存在していなければ(=表示値が整数ならば)以下の処理を行う
+          if (!_decimalFlag)
+            _displayedNumber = _displayedNumber * 10 + num;
           else {
             int count = 1;
             for (int i = 0;
-            _displayedNumber * Math.pow(10, i) != (_displayedNumber * Math.pow(10, i)).ceil();
-            i++) {
+                _displayedNumber * Math.pow(10, i) !=
+                    (_displayedNumber * Math.pow(10, i)).ceil();
+                i++) {
               count++;
             }
-            _displayedNumber = double.parse((_displayedNumber + (num / Math.pow(10, count))).toStringAsFixed(count));
-            checkDecimal();
+            _displayedNumber = double.parse(
+                (_displayedNumber + (num / Math.pow(10, count)))
+                    .toStringAsFixed(count));
+            _checkDecimal();
           }
-          _setNumber = _displayedNumber;
+          _setCurrentNumber = _displayedNumber;
         });
       }
-    // 表示値と格納値が違うなら、表示値は打ち込んだ値に更新する
+      // 表示値と格納値が違うなら、表示値は打ち込んだ値に更新する
     } else {
       setState(() {
         _displayedNumber = num;
-        _setNumber = _displayedNumber;
-        _operatorType = OPERATOR_TYPE.ini;
+        _setCurrentNumber = _displayedNumber;
+        _operatorType = null;
       });
     }
   }
 
-  // 押された演算子の種類の応じて_firstNumに_setNumberを格納するメソッド
-  void _operatorPressed(OPERATOR_TYPE type) {
-    _setNumber = _displayedNumber;
-    _firstNum = _setNumber;
-    _setNumber = 0;
+  // 押された演算子の種類に応じて_firstNumに_setCurrentNumberを格納するメソッド
+  void _operatorPressed(OperatorType type) {
+    // 演算結果を次の_firstNUmにする
+    _setCurrentNumber = _displayedNumber;
+    _firstNum = _setCurrentNumber;
+    _setCurrentNumber = 0;
     _displayedNumber = 0;
     _operatorType = type;
     _decimalFlag = false;
@@ -96,7 +103,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // _operatorTypeが「add」なら足し算を実行するメソッド
   void _add() {
     setState(() {
-      _displayedNumber =  _firstNum + _setNumber;
+      _displayedNumber = _firstNum + _setCurrentNumber;
+      _checkDecimal();
       _firstNum = _displayedNumber;
     });
   }
@@ -104,7 +112,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // _operatorTypeが「sub」なら引き算を実行するメソッド
   void _sub() {
     setState(() {
-      _displayedNumber = _firstNum - _setNumber; 
+      _displayedNumber = _firstNum - _setCurrentNumber;
+      _checkDecimal();
       _firstNum = _displayedNumber;
     });
   }
@@ -112,7 +121,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // _operatorTypeが「multi」なら掛け算を実行するメソッド
   void _multi() {
     setState(() {
-      _displayedNumber = _firstNum * _setNumber; 
+      _displayedNumber = _firstNum * _setCurrentNumber;
+      _checkDecimal();
       _firstNum = _displayedNumber;
     });
   }
@@ -120,42 +130,74 @@ class _MyHomePageState extends State<MyHomePage> {
   // _operatorTypeが「div」なら割り算を実行するメソッド
   void _div() {
     setState(() {
-      _displayedNumber = _firstNum / _setNumber; 
-      _firstNum = _displayedNumber;
+      if (_setCurrentNumber == 0) {
+        String _displayedNumber = "結果を表示できません";
+      } else {
+        _displayedNumber = _firstNum / _setCurrentNumber;
+        _checkDecimal();
+        _firstNum = _displayedNumber;
+      }
     });
   }
 
-  void checkDecimal() {
-    double checkNum = _displayedNumber;
-    if (1000000000 < _displayedNumber || _displayedNumber == _displayedNumber.toInt()) {
+  void _checkDecimal() {
+    double checkNmber = _displayedNumber;
+    if (100000000 < _displayedNumber ||
+        _displayedNumber == _displayedNumber.toInt()) {
       int count;
-      for(int i = 0; 1000000000 < _displayedNumber / Math.pow(10, i); i++) {
+      for (int i = 0; 100000000 < _displayedNumber / Math.pow(10, i); i++) {
         count = i;
-        checkNum = checkNum / 10;
+        checkNmber = checkNmber / 8;
       }
       setState(() {
-        _displayedNumber = checkNum;
+        _displayedNumber = checkNmber;
       });
-    }
-    else {
+    } else {
       int count = 0;
-      for(int i = 0; 1 < _displayedNumber / Math.pow(10, i); i++) {
+      for (int i = 0; 1 < _displayedNumber / Math.pow(10, i); i++) {
         count = i;
       }
       int displayCount = 10 - count;
-      _displayedNumber = double.parse(_displayedNumber.toStringAsFixed(displayCount));
-
+      _displayedNumber =
+          double.parse(_displayedNumber.toStringAsFixed(displayCount));
     }
+  }
+
+  void _invertNum() {
+    setState(() {
+      _displayedNumber = -_displayedNumber;
+      _setCurrentNumber = -_setCurrentNumber;
+    });
+  }
+
+  // パーセント表示するメソッド
+  // void _percentageDisplay() {
+  //   setState(() {
+  //     _displayedNumber = _displayedNumber * 0.01;
+  //     _setCurrentNumber = _setCurrentNumber * 0.01;
+  //   });
+  // }
+
+  void _delete() {
+    setState(() {
+      String _newNum = _displayedNumber.toString();
+      print(_newNum.length);
+      // double型を文字列に変えたため、デフォルトで文字数が「3」になる
+      if (_newNum.length > 3) {
+        _newNum = _newNum.substring(0, _newNum.length - 3);
+        _displayedNumber = double.parse(_newNum);
+      }
+    });
   }
 
   // 画面上の数値をオールクリアするメソッド
   void _clearNum() {
     setState(() {
-      _setNumber = 0;
+      _setCurrentNumber = 0;
       _displayedNumber = 0;
       _firstNum = 0;
       // _operatorTypeも初期化したい
-      _operatorType = OPERATOR_TYPE.ini;
+      _operatorType = null;
       _decimalFlag = false;
     });
   }
@@ -164,8 +206,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // // 演算子入力時に値をリストに格納するメソッド
   // void _setElements(int setNumber) {
   //   setState(() {
-  //     _calcElements.add(_setNumber);
-  //     _setNum(_setNumber);
+  //     _calcElements.add(_setCurrentNumber);
+  //     _setCurrentNum(_setCurrentNumber);
   //     _clearNum();
   //   });
   // }
@@ -174,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // void _calculation(int setNumber) {
   //   setState(() {
   //     for (int i = 0; i < _calcElements.length; i++) {
-  //       _setNumber += _calcElements[i];
+  //       _setCurrentNumber += _calcElements[i];
   //     }
   //     // 次の演算に備え、クリア
   //     _calcElements.clear();
@@ -226,14 +268,13 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Expanded(
                 flex: 1,
-                child: Text(
-                  // 表示値が整数値か小数点数かで表示方法を分岐する
-                  _displayedNumber == _displayedNumber.toInt() 
-                    ? _displayedNumber.toInt().toString()
-                    : _displayedNumber.toString(),
-                  style: TextStyle(
-                    fontSize: 80,
-                    color: Colors.white,
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Text(
+                    _displayedNumber == _displayedNumber.toInt()
+                        ? _displayedNumber.toInt().toString()
+                        : _displayedNumber.toString(),
+                    style: TextStyle(fontSize: 32, color: Colors.white),
                   ),
                 ),
               ),
@@ -283,7 +324,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ),
                                   color: Colors.orange,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _invertNum();
+                                  },
                                   child: Text(
                                     "+/-",
                                     textAlign: TextAlign.center,
@@ -305,9 +348,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                   ),
                                   color: Colors.orange,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _delete();
+                                  },
                                   child: Text(
-                                    "%",
+                                    "Ð",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 30,
@@ -328,7 +373,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.orange,
                                   onPressed: () {
-                                    _operatorPressed(OPERATOR_TYPE.div);
+                                    _operatorPressed(OperatorType.div);
                                   },
                                   child: Text(
                                     "÷",
@@ -359,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(7);
+                                    _setCurrentNum(7);
                                   },
                                   child: Text(
                                     "7",
@@ -383,7 +428,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(8);
+                                    _setCurrentNum(8);
                                   },
                                   child: Text(
                                     "8",
@@ -407,7 +452,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(9);
+                                    _setCurrentNum(9);
                                   },
                                   child: Text(
                                     "9",
@@ -431,7 +476,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.orange,
                                   onPressed: () {
-                                    _operatorPressed(OPERATOR_TYPE.multi);
+                                    _operatorPressed(OperatorType.multi);
                                   },
                                   child: Text(
                                     "×",
@@ -462,7 +507,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(4);
+                                    _setCurrentNum(4);
                                   },
                                   child: Text(
                                     "4",
@@ -486,7 +531,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(5);
+                                    _setCurrentNum(5);
                                   },
                                   child: Text(
                                     "5",
@@ -510,7 +555,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(6);
+                                    _setCurrentNum(6);
                                   },
                                   child: Text(
                                     "6",
@@ -534,7 +579,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.orange,
                                   onPressed: () {
-                                    _operatorPressed(OPERATOR_TYPE.sub);
+                                    _operatorPressed(OperatorType.sub);
                                   },
                                   child: Text(
                                     "-",
@@ -565,7 +610,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(1);
+                                    _setCurrentNum(1);
                                   },
                                   child: Text(
                                     "1",
@@ -589,7 +634,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(2);
+                                    _setCurrentNum(2);
                                   },
                                   child: Text(
                                     "2",
@@ -613,7 +658,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.grey,
                                   onPressed: () {
-                                    _setNum(3);
+                                    _setCurrentNum(3);
                                   },
                                   child: Text(
                                     "3",
@@ -637,7 +682,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.orange,
                                   onPressed: () {
-                                    _operatorPressed(OPERATOR_TYPE.add);
+                                    _operatorPressed(OperatorType.add);
                                   },
                                   child: Text(
                                     "+",
@@ -656,26 +701,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: <Widget>[
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setNum(0);
-                                  },
-                                  child: Text(
-                                    "0",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
+                            SizedBox(
+                              width: 188,
+                              height: 80,
+                              child: RaisedButton(
+                                color: Colors.grey,
+                                shape: const StadiumBorder(),
+                                onPressed: () {
+                                  _setCurrentNum(0);
+                                },
+                                child: Text(
+                                  "0",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 50,
                                   ),
                                 ),
                               ),
@@ -716,20 +755,18 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   color: Colors.orange,
                                   onPressed: () {
-                                    switch(_operatorType) {
-                                      case OPERATOR_TYPE.add:
+                                    switch (_operatorType) {
+                                      case OperatorType.add:
                                         _add();
                                         break;
-                                      case OPERATOR_TYPE.sub:
+                                      case OperatorType.sub:
                                         _sub();
                                         break;
-                                      case OPERATOR_TYPE.multi:
+                                      case OperatorType.multi:
                                         _multi();
                                         break;
-                                      case OPERATOR_TYPE.div:
+                                      case OperatorType.div:
                                         _div();
-                                        break;
-                                      case OPERATOR_TYPE.ini:
                                         break;
                                       default:
                                         break;
@@ -756,9 +793,11 @@ class _MyHomePageState extends State<MyHomePage> {
           )),
     );
   }
+
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(EnumProperty<OPERATOR_TYPE>('_operatorType', _operatorType));
+    properties.add(EnumProperty<OperatorType>('_operatorType', _operatorType));
   }
 }
+
