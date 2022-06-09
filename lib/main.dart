@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Logicクラスのインスタンスを作成
   Logic _logic = Logic();
 
+  // 「Button」というWidgetを作成し、中身のレイアウトを決めていく
   Widget Button(String text, Color colorButton, Color colorText) {
     return Expanded(
     child: Container(
