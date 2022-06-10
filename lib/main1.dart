@@ -42,6 +42,13 @@ class MyHomePage extends StatefulWidget {
 enum OperatorType { add, sub, multi, div }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // ボタンの色設定
+  static const Color colorMain = Colors.black;
+  static const Color colorNum = Colors.white10;
+  static const Color colorFunc = Colors.white54;
+  static const Color colorCalc = Colors.orange;
+  static const Color colorText = Colors.white;
+
   // 値を格納する変数
   double _setCurrentNumber = 0;
   // 値を表示する変数
@@ -50,8 +57,12 @@ class _MyHomePageState extends State<MyHomePage> {
   double _firstNum = 0;
   // 小数点ボタンが押されたかどうかを示す変数
   bool _decimalFlag = false;
-
+  // enum値を示す変数
   OperatorType? _operatorType;
+  // 0で数値を割った場合のエラーメッセージ
+  String _errorMessage = "";
+
+  String _cheeringmessage = "";
 
   // 数値を画面に表示するメソッド
   void _setCurrentNum(double num) {
@@ -106,6 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _displayedNumber = _firstNum + _setCurrentNumber;
       _checkDecimal();
       _firstNum = _displayedNumber;
+      _cheeringmessage = "Nice Job!";
     });
   }
 
@@ -115,6 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _displayedNumber = _firstNum - _setCurrentNumber;
       _checkDecimal();
       _firstNum = _displayedNumber;
+      _cheeringmessage = "Perfect!";
     });
   }
 
@@ -124,18 +137,20 @@ class _MyHomePageState extends State<MyHomePage> {
       _displayedNumber = _firstNum * _setCurrentNumber;
       _checkDecimal();
       _firstNum = _displayedNumber;
+      _cheeringmessage = "Excellent!";
     });
   }
 
   // _operatorTypeが「div」なら割り算を実行するメソッド
   void _div() {
     setState(() {
-      if (_setCurrentNumber == 0) {
-        String _displayedNumber = "結果を表示できません";
+      _displayedNumber = _firstNum / _setCurrentNumber;
+      _checkDecimal();
+      _firstNum = _displayedNumber;
+      if (_errorMessage == "Sorry, but I have no idea...") {
+        _cheeringmessage = "Try again!";
       } else {
-        _displayedNumber = _firstNum / _setCurrentNumber;
-        _checkDecimal();
-        _firstNum = _displayedNumber;
+        _cheeringmessage = "Amazing!";
       }
     });
   }
@@ -163,6 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  // 数値の符号を切り替えるメソッド
   void _invertNum() {
     setState(() {
       _displayedNumber = -_displayedNumber;
@@ -170,21 +186,18 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // パーセント表示するメソッド
-  // void _percentageDisplay() {
-  //   setState(() {
-  //     _displayedNumber = _displayedNumber * 0.01;
-  //     _setCurrentNumber = _setCurrentNumber * 0.01;
-  //   });
-  // }
-
-  void _delete() {
+  // 一の位の数値を削除していくメソッド
+  void _deleteOnesPlace() {
     setState(() {
       String _newNum = _displayedNumber.toString();
-      print(_newNum.length);
+      print(_newNum);
       // double型を文字列に変えたため、デフォルトで文字数が「3」になる
       if (_newNum.length > 3) {
-        _newNum = _newNum.substring(0, _newNum.length - 3);
+        if (_newNum[_newNum.length - 1] == "0") {
+          _newNum = _newNum.substring(0, _newNum.length - 3);
+        } else {
+          _newNum = _newNum.substring(0, _newNum.length - 1);
+        }
         _displayedNumber = double.parse(_newNum);
       }
     });
@@ -199,30 +212,115 @@ class _MyHomePageState extends State<MyHomePage> {
       // _operatorTypeも初期化したい
       _operatorType = null;
       _decimalFlag = false;
+      _errorMessage = "";
+      _cheeringmessage = "";
     });
   }
 
-  // List<int> _calcElements = [];
-  // // 演算子入力時に値をリストに格納するメソッド
-  // void _setElements(int setNumber) {
-  //   setState(() {
-  //     _calcElements.add(_setCurrentNumber);
-  //     _setCurrentNum(_setCurrentNumber);
-  //     _clearNum();
-  //   });
-  // }
-
-  // // 演算を実行するメソッド
-  // void _calculation(int setNumber) {
-  //   setState(() {
-  //     for (int i = 0; i < _calcElements.length; i++) {
-  //       _setCurrentNumber += _calcElements[i];
-  //     }
-  //     // 次の演算に備え、クリア
-  //     _calcElements.clear();
-  //     // resultは出力後、初期化
-  //   });
-  // }
+  // ボタンをウィジェット化
+  Widget Button(String text, Color colorButton, Color colorText) {
+    return SizedBox(
+      width: text == "0" ? 188 : 94,
+      height: 80,
+      child: ElevatedButton(
+        child: Padding(
+          padding: text == "0"
+              ? const EdgeInsets.only(left: 20, top: 20, right: 50, bottom: 20)
+              : const EdgeInsets.all(10),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: text == "+/-" || text == "AC" ? 30 : 35,
+            ),
+          ),
+        ),
+        onPressed: () {
+          switch (text) {
+            case "1":
+              _setCurrentNum(1);
+              break;
+            case "2":
+              _setCurrentNum(2);
+              break;
+            case "3":
+              _setCurrentNum(3);
+              break;
+            case "4":
+              _setCurrentNum(4);
+              break;
+            case "5":
+              _setCurrentNum(5);
+              break;
+            case "6":
+              _setCurrentNum(6);
+              break;
+            case "7":
+              _setCurrentNum(7);
+              break;
+            case "8":
+              _setCurrentNum(8);
+              break;
+            case "9":
+              _setCurrentNum(9);
+              break;
+            case "0":
+              _setCurrentNum(0);
+              break;
+            case ".":
+              _decimalFlag = true;
+              break;
+            case "AC":
+              _clearNum();
+              break;
+            case "+/-":
+              _invertNum();
+              break;
+            case "D":
+              _deleteOnesPlace();
+              break;
+            case "÷":
+              _operatorPressed(OperatorType.div);
+              break;
+            case "×":
+              _operatorPressed(OperatorType.multi);
+              break;
+            case "-":
+              _operatorPressed(OperatorType.sub);
+              break;
+            case "+":
+              _operatorPressed(OperatorType.add);
+              break;
+            case "=":
+              switch (_operatorType) {
+                case OperatorType.add:
+                  _add();
+                  break;
+                case OperatorType.sub:
+                  _sub();
+                  break;
+                case OperatorType.multi:
+                  _multi();
+                  break;
+                case OperatorType.div:
+                  _div();
+                  break;
+                default:
+                  break;
+              }
+              break;
+            default:
+              break;
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          primary: colorButton,
+          onPrimary: colorText,
+          shape: text == "0" ? const StadiumBorder() : const CircleBorder(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +333,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             RaisedButton(
               child: Icon(FontAwesomeIcons.clockRotateLeft),
-              color: Colors.orange,
+              color: Colors.white,
               shape: const CircleBorder(
                 side: BorderSide(
                   color: Colors.black,
@@ -256,7 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Container(
-          color: Colors.black,
+          color: colorMain,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             // なぜWidgetで囲む？
@@ -264,17 +362,27 @@ class _MyHomePageState extends State<MyHomePage> {
               // 計算結果表示エリア
               Expanded(
                 flex: 1,
-                child: Text("  "),
+                child: Text(
+                  _cheeringmessage,
+                  style: TextStyle(fontSize: 28, color: colorCalc),
+                ),
               ),
               Expanded(
                 flex: 1,
                 child: FittedBox(
                   fit: BoxFit.fitWidth,
                   child: Text(
-                    _displayedNumber == _displayedNumber.toInt()
-                        ? _displayedNumber.toInt().toString()
-                        : _displayedNumber.toString(),
-                    style: TextStyle(fontSize: 32, color: Colors.white),
+                    _operatorType == OperatorType.div &&
+                            _setCurrentNumber == 0.0
+                        ? _errorMessage = "Sorry, but I have no idea..."
+                        : _displayedNumber == _displayedNumber.toInt()
+                            ? _displayedNumber.toInt().toString()
+                            : _displayedNumber.toString(),
+                    style: TextStyle(
+                        fontSize: 32,
+                        color: (_errorMessage == "Sorry, but I have no idea...")
+                            ? Colors.orange
+                            : colorText),
                   ),
                 ),
               ),
@@ -288,103 +396,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: <Widget>[
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.red,
-                                  onPressed: () {
-                                    // ボタンが押されたら_clearNumメソッドを呼び出し、引数()を渡す
-                                    _clearNum();
-                                  },
-                                  child: Text(
-                                    "All Clear",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.orange,
-                                  onPressed: () {
-                                    _invertNum();
-                                  },
-                                  child: Text(
-                                    "+/-",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.orange,
-                                  onPressed: () {
-                                    _delete();
-                                  },
-                                  child: Text(
-                                    "D",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.orange,
-                                  onPressed: () {
-                                    _operatorPressed(OperatorType.div);
-                                  },
-                                  child: Text(
-                                    "÷",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                            Button("AC", colorFunc, colorMain),
+                            Button("+/-", colorFunc, colorMain),
+                            Button("D", colorFunc, colorMain),
+                            Button("÷", colorCalc, colorText),
                           ],
                         ),
                       ),
@@ -392,102 +407,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: <Widget>[
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(7);
-                                  },
-                                  child: Text(
-                                    "7",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(8);
-                                  },
-                                  child: Text(
-                                    "8",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(9);
-                                  },
-                                  child: Text(
-                                    "9",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.orange,
-                                  onPressed: () {
-                                    _operatorPressed(OperatorType.multi);
-                                  },
-                                  child: Text(
-                                    "×",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                            Button("7", colorNum, colorText),
+                            Button("8", colorNum, colorText),
+                            Button("9", colorNum, colorText),
+                            Button("×", colorCalc, colorText),
                           ],
                         ),
                       ),
@@ -495,102 +418,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: <Widget>[
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(4);
-                                  },
-                                  child: Text(
-                                    "4",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(5);
-                                  },
-                                  child: Text(
-                                    "5",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(6);
-                                  },
-                                  child: Text(
-                                    "6",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.orange,
-                                  onPressed: () {
-                                    _operatorPressed(OperatorType.sub);
-                                  },
-                                  child: Text(
-                                    "-",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                            Button("4", colorNum, colorText),
+                            Button("5", colorNum, colorText),
+                            Button("6", colorNum, colorText),
+                            Button("-", colorCalc, colorText),
                           ],
                         ),
                       ),
@@ -598,102 +429,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: <Widget>[
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(1);
-                                  },
-                                  child: Text(
-                                    "1",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(2);
-                                  },
-                                  child: Text(
-                                    "2",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _setCurrentNum(3);
-                                  },
-                                  child: Text(
-                                    "3",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.orange,
-                                  onPressed: () {
-                                    _operatorPressed(OperatorType.add);
-                                  },
-                                  child: Text(
-                                    "+",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                            Button("1", colorNum, colorText),
+                            Button("2", colorNum, colorText),
+                            Button("3", colorNum, colorText),
+                            Button("+", colorCalc, colorText),
                           ],
                         ),
                       ),
@@ -701,87 +440,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: <Widget>[
-                            SizedBox(
-                              width: 188,
-                              height: 80,
-                              child: RaisedButton(
-                                color: Colors.grey,
-                                shape: const StadiumBorder(),
-                                onPressed: () {
-                                  _setCurrentNum(0);
-                                },
-                                child: Text(
-                                  "0",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 50,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _decimalFlag = true;
-                                  },
-                                  child: Text(
-                                    ".",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: SizedBox(
-                                width: 80,
-                                height: 80,
-                                child: FlatButton(
-                                  shape: const CircleBorder(
-                                    side: BorderSide(
-                                      style: BorderStyle.none,
-                                    ),
-                                  ),
-                                  color: Colors.orange,
-                                  onPressed: () {
-                                    switch (_operatorType) {
-                                      case OperatorType.add:
-                                        _add();
-                                        break;
-                                      case OperatorType.sub:
-                                        _sub();
-                                        break;
-                                      case OperatorType.multi:
-                                        _multi();
-                                        break;
-                                      case OperatorType.div:
-                                        _div();
-                                        break;
-                                      default:
-                                        break;
-                                    }
-                                  },
-                                  child: Text(
-                                    "=",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                            Button("0", colorNum, colorText),
+                            Button(".", colorNum, colorText),
+                            Button("=", colorNum, colorText),
                           ],
                         ),
                       ),
@@ -800,4 +461,3 @@ class _MyHomePageState extends State<MyHomePage> {
     properties.add(EnumProperty<OperatorType>('_operatorType', _operatorType));
   }
 }
-
