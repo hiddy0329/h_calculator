@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'history_page.dart';
 import 'dart:math' as Math;
+import 'logic.dart';
 
 // アプリを立ち上げ、MyAppクラスを呼び出す
 void main() {
@@ -18,27 +19,20 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       // エミュレーター右上の「debug」という帯を消す
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
       // MyHomePageクラスを呼び出し、画面の描画に移る
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
     );
   }
 }
 
-//画面の描画をするためのクラス
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-//演算子をそれぞれenum値で定義する
+//演算子をenum値で定義
 enum OperatorType { add, sub, multi, div }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -49,70 +43,33 @@ class _MyHomePageState extends State<MyHomePage> {
   static const Color colorCalc = Colors.orange;
   static const Color colorText = Colors.white;
 
-  // 値を格納する変数
-  double _setCurrentNumber = 0;
-  // 値を表示する変数
-  double _displayedNumber = 0;
-  // 最初の値を保持する変数
-  double _firstNum = 0;
-  // 小数点ボタンが押されたかどうかを示す変数
-  bool _decimalFlag = false;
-  // "."が押された後の数値の数をカウントする変数
-  int _numAfterPoint = 0;
-  // enum値を示す変数
-  OperatorType? _operatorType;
-  // 0で数値を割った場合のエラーメッセージ
-  String _errorMessage = "";
-  // 画面上部に出力するメッセージ
-  String _cheeringmessage = "";
+  
+  Logic _logic = Logic();
 
-  // 実際に表示する値を調整するメソッド
-  String _buildDisplayedNumber(double _displayedNumber) {
+  // 実際に表示する値を形成するメソッド
+  String _buildDisplayedNum(double _displayedNumber, double num) {
     int intPart = _setCurrentNumber.toInt();
-     // 0で割った場合はエラーメッセージを表示
+    String _displayedNumberAsString = _displayedNumber.toString();
+    // 0で割った場合はエラーメッセージを表示
     if (_operatorType == OperatorType.div && _setCurrentNumber == 0.0) {
-      return _errorMessage = "Sorry, but I have no idea...";
+      return _divErrorMessage = "Sorry, but I have no idea...";
     } else if (_decimalFlag && _setCurrentNumber - intPart == 0.0) {
       return _displayedNumber.toStringAsFixed(_numAfterPoint);
-    } else if ( _displayedNumber == _displayedNumber.toInt()) {
+    } else if (_displayedNumberAsString[_displayedNumberAsString.length - 1] !=
+            "0" &&
+        num == 0.0) {
+      return _displayedNumber.toStringAsFixed(_numAfterPoint);
+    } else if (_displayedNumber == _displayedNumber.toInt()) {
       return _displayedNumber.toInt().toString();
     } else {
       return _displayedNumber.toString();
     }
   }
 
-  // 数値を画面に表示するメソッド
-  void _setCurrentNum(double num) {
-    // 画面に出力できる最大値
-    const maxValueNumber = 100000000;
-    // _displayedNumber == _setCurrentNumber、つまり、表示値と格納値が同じならば以下の処理を行う
-    if (_displayedNumber == _setCurrentNumber) {
-      if (_displayedNumber < maxValueNumber) {
-        setState(() {
-          // 小数点が存在していなければ(=表示値が整数ならば)以下の処理を行う
-          if (!_decimalFlag)
-            _displayedNumber = _displayedNumber * 10 + num;
-          // 小数点"."が押されたとき
-          else {
-            _numAfterPoint++;
-            _displayedNumber = _displayedNumber + num * Math.pow(0.1, _numAfterPoint);
-            _checkDecimal();
-          }
-          _setCurrentNumber = _displayedNumber;
-        });
-      }
-      // 表示値と格納値が違うなら、表示値は打ち込んだ値に更新する
-    } else {
-      setState(() {
-        _displayedNumber = num;
-        _setCurrentNumber = _displayedNumber;
-        _operatorType = null;
-      });
-    }
-  }
+  
 
   // 押された演算子の種類に応じて_firstNumに_setCurrentNumberを格納するメソッド
-  void _operatorPressed(OperatorType type) {
+  void _setFirstNum(OperatorType type) {
     // 演算結果を次の_firstNUmにする
     _setCurrentNumber = _displayedNumber;
     _firstNum = _setCurrentNumber;
@@ -121,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _operatorType = type;
     _decimalFlag = false;
     _numAfterPoint = 0;
-    _cheeringmessage = "";
+    _cheeringMessage = "";
   }
 
   // _operatorTypeが「add」なら足し算を実行するメソッド
@@ -130,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _displayedNumber = _firstNum + _setCurrentNumber;
       _checkDecimal();
       _firstNum = _displayedNumber;
-      _cheeringmessage = "Nice Job!";
+      _cheeringMessage = "Nice Job!";
     });
   }
 
@@ -140,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _displayedNumber = _firstNum - _setCurrentNumber;
       _checkDecimal();
       _firstNum = _displayedNumber;
-      _cheeringmessage = "Perfect!";
+      _cheeringMessage = "Perfect!";
     });
   }
 
@@ -150,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _displayedNumber = _firstNum * _setCurrentNumber;
       _checkDecimal();
       _firstNum = _displayedNumber;
-      _cheeringmessage = "Excellent!";
+      _cheeringMessage = "Excellent!";
     });
   }
 
@@ -160,10 +117,10 @@ class _MyHomePageState extends State<MyHomePage> {
       _displayedNumber = _firstNum / _setCurrentNumber;
       _checkDecimal();
       _firstNum = _displayedNumber;
-      if (_errorMessage == "Sorry, but I have no idea...") {
-        _cheeringmessage = "Try again!";
+      if (_divErrorMessage.isNotEmpty) {
+        _cheeringMessage = "Try again!";
       } else {
-        _cheeringmessage = "Amazing!";
+        _cheeringMessage = "Amazing!";
       }
     });
   }
@@ -175,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
       int count;
       for (int i = 0; 100000000 < _displayedNumber / Math.pow(10, i); i++) {
         count = i;
-        checkNmber = checkNmber / 8;
+        checkNmber = checkNmber / 10;
       }
       setState(() {
         _displayedNumber = checkNmber;
@@ -202,19 +159,23 @@ class _MyHomePageState extends State<MyHomePage> {
   // 一の位の数値を削除していくメソッド
   void _deleteOnesPlace() {
     setState(() {
-      String _newNum = _displayedNumber.toString();
+      String _displayedNumberAsString = _displayedNumber.toString();
       // double型を文字列に変えたため、デフォルトで文字数が「3」になる
-      if (_newNum.length > 3) {
-        if (_newNum[_newNum.length - 1] == "0") {
-          _newNum = _newNum.substring(0, _newNum.length - 3);
-        } else if (_newNum.contains(".0")) {
-          _newNum = _newNum.substring(0, _newNum.length - 1);
+      if (_displayedNumberAsString.length > 3) {
+        if (_displayedNumberAsString[_displayedNumberAsString.length - 1] ==
+            "0") {
+          _displayedNumberAsString = _displayedNumberAsString.substring(
+              0, _displayedNumberAsString.length - 3);
+        } else if (_displayedNumberAsString.contains(".0")) {
+          _displayedNumberAsString = _displayedNumberAsString.substring(
+              0, _displayedNumberAsString.length - 1);
         } else {
-          _newNum = _newNum.substring(0, _newNum.length - 1);
+          _displayedNumberAsString = _displayedNumberAsString.substring(
+              0, _displayedNumberAsString.length - 1);
         }
-        _displayedNumber = double.parse(_newNum);
+        _displayedNumber = double.parse(_displayedNumberAsString);
         _decimalFlag = false;
-        _numAfterPoint = 0;
+        _numAfterPoint--;
       }
     });
   }
@@ -228,8 +189,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // _operatorTypeも初期化したい
       _operatorType = null;
       _decimalFlag = false;
-      _errorMessage = "";
-      _cheeringmessage = "All Clear!";
+      _divErrorMessage = "";
+      _cheeringMessage = "All Clear!";
       _numAfterPoint = 0;
     });
   }
@@ -254,36 +215,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         onPressed: () {
           switch (text) {
-            case "1":
-              _setCurrentNum(1);
-              break;
-            case "2":
-              _setCurrentNum(2);
-              break;
-            case "3":
-              _setCurrentNum(3);
-              break;
-            case "4":
-              _setCurrentNum(4);
-              break;
-            case "5":
-              _setCurrentNum(5);
-              break;
-            case "6":
-              _setCurrentNum(6);
-              break;
-            case "7":
-              _setCurrentNum(7);
-              break;
-            case "8":
-              _setCurrentNum(8);
-              break;
-            case "9":
-              _setCurrentNum(9);
-              break;
-            case "0":
-              _setCurrentNum(0);
-              break;
             case ".":
               _decimalFlag = true;
               break;
@@ -293,20 +224,20 @@ class _MyHomePageState extends State<MyHomePage> {
             case "+/-":
               _invertNum();
               break;
-            case "D":
+            case "➡":
               _deleteOnesPlace();
               break;
             case "÷":
-              _operatorPressed(OperatorType.div);
+              _setFirstNum(OperatorType.div);
               break;
             case "×":
-              _operatorPressed(OperatorType.multi);
+              _setFirstNum(OperatorType.multi);
               break;
             case "-":
-              _operatorPressed(OperatorType.sub);
+              _setFirstNum(OperatorType.sub);
               break;
             case "+":
-              _operatorPressed(OperatorType.add);
+              _setFirstNum(OperatorType.add);
               break;
             case "=":
               switch (_operatorType) {
@@ -327,6 +258,7 @@ class _MyHomePageState extends State<MyHomePage> {
               }
               break;
             default:
+              _setCurrentNum(double.parse(text));
               break;
           }
         },
@@ -348,15 +280,15 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            RaisedButton(
+            ElevatedButton(
               child: Icon(FontAwesomeIcons.clockRotateLeft),
-              color: Colors.white,
-              shape: const CircleBorder(
+              style: ElevatedButton.styleFrom(
                 side: BorderSide(
                   color: Colors.black,
                   width: 1,
-                  style: BorderStyle.solid,
+                  style: BorderStyle.none,
                 ),
+                primary: Colors.black,
               ),
               onPressed: () {
                 // 履歴表示ページへ遷移
@@ -380,21 +312,29 @@ class _MyHomePageState extends State<MyHomePage> {
               Expanded(
                 flex: 1,
                 child: Text(
-                  _cheeringmessage,
+                  _cheeringMessage,
                   style: TextStyle(fontSize: 28, color: colorCalc),
                 ),
               ),
               Expanded(
                 flex: 1,
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
+                child: Container(
                   child: Text(
-                    _buildDisplayedNumber(_displayedNumber),
+                    (_operatorType == null)
+                        ? _buildDisplayedNum(_displayedNumber, 0.0)
+                        : (_operatorType != null &&
+                                _displayedNumber == _displayedNumber.toInt())
+                            ? _buildDisplayedNum(_displayedNumber, 0.0)
+                            : _displayedNumber.toString(),
                     style: TextStyle(
-                        fontSize: 32,
-                        color: (_errorMessage == "Sorry, but I have no idea...")
-                            ? Colors.orange
-                            : colorText),
+                        fontSize:
+                            (_divErrorMessage == "Sorry, but I have no idea...")
+                                ? 33.0
+                                : 73.5,
+                        color:
+                            (_divErrorMessage == "Sorry, but I have no idea...")
+                                ? Colors.orange
+                                : colorText),
                   ),
                 ),
               ),
@@ -410,7 +350,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           children: <Widget>[
                             Button("AC", colorFunc, colorMain),
                             Button("+/-", colorFunc, colorMain),
-                            Button("D", colorFunc, colorMain),
+                            Button("➡", colorFunc, colorMain),
                             Button("÷", colorCalc, colorText),
                           ],
                         ),
