@@ -43,7 +43,23 @@ class _MyHomePageState extends State<MyHomePage> {
   static const Color colorCalc = Colors.orange;
   static const Color colorText = Colors.white;
 
-  
+  // 値を格納する変数
+  double _setCurrentNumber = 0;
+  // 値を表示する変数
+  double _displayedNumber = 0;
+  // 最初の値を保持する変数
+  double _firstNum = 0;
+  // 小数点ボタンが押されたかどうかを示す変数
+  bool _decimalFlag = false;
+  // "."が押された後の数値の数をカウントする変数
+  int _numAfterPoint = 0;
+  // enum値を示す変数
+  OperatorType? _operatorType;
+  // 0で数値を割った場合のエラーメッセージ
+  String _divErrorMessage = "";
+  // 画面上部に出力するメッセージ
+  String _cheeringMessage = "";
+
   Logic _logic = Logic();
 
   // 実際に表示する値を形成するメソッド
@@ -63,6 +79,36 @@ class _MyHomePageState extends State<MyHomePage> {
       return _displayedNumber.toInt().toString();
     } else {
       return _displayedNumber.toString();
+    }
+  }
+
+  // 数値を画面に表示するメソッド
+  void _setCurrentNum(double num) {
+    // 画面に出力できる最大値
+    const maxValueNumber = 100000000;
+    // _displayedNumber == _setCurrentNumber、つまり、表示値と格納値が同じならば以下の処理を行う
+    if (_displayedNumber == _setCurrentNumber) {
+      if (_displayedNumber < maxValueNumber) {
+        setState(() {
+          // 小数点が存在していなければ(=表示値が整数ならば)以下の処理を行う
+          if (!_decimalFlag)
+            _displayedNumber = _displayedNumber * 10 + num;
+          // 小数点"."が押されたとき
+          else {
+            _numAfterPoint++;
+            _displayedNumber = _displayedNumber + num * Math.pow(0.1, _numAfterPoint);
+            _checkDecimal();
+          }
+          _setCurrentNumber = _displayedNumber;
+        });
+      }
+      // 表示値と格納値が違うなら、表示値は打ち込んだ値に更新する
+    } else {
+      setState(() {
+        _displayedNumber = num;
+        _setCurrentNumber = _displayedNumber;
+        _operatorType = null;
+      });
     }
   }
 
