@@ -1,53 +1,45 @@
 import 'package:intl/intl.dart' as intl;
 import 'dart:math' as Math;
 
+//演算子をenum値で定義
+enum OperatorType { add, sub, multi, div }
+
 class Logic {
-  String _text = "0";
-  // 他のファイルからは「text」として呼び出す
-  get text => _text;
-
-  //現在の値
-  double _currentNumber = 0;
-
-  //小数点の有無
+   // 値を格納する変数
+  double _setCurrentNumber = 0;
+  // 値を表示する変数
+  double _displayedNumber = 0;
+  // 最初の値を保持する変数
+  double _firstNum = 0;
+  // 小数点ボタンが押されたかどうかを示す変数
   bool _decimalFlag = false;
-
-  //小数点以下の数
+  // "."が押された後の数値の数をカウントする変数
   int _numAfterPoint = 0;
+  // enum値を示す変数
+  OperatorType? _operatorType;
+  // 0で数値を割った場合のエラーメッセージ
+  String _divErrorMessage = "";
+  // 画面上部に出力するメッセージ
+  String _cheeringMessage = "";
 
-  intl.NumberFormat formatter = intl.NumberFormat('#,###.########', 'en_US');
 
-  // 入力された値を「_text」に代入
-  void input(String text) {
-    //現在値のセット
-    if(text == ".") {
-      _decimalFlag = true;
+  // 実際に表示する値を形成するメソッド
+  String _buildDisplayedNum(double _displayedNumber, double num) {
+    int intPart = _setCurrentNumber.toInt();
+    String _displayedNumberAsString = _displayedNumber.toString();
+    // 0で割った場合はエラーメッセージを表示
+    if (_operatorType == OperatorType.div && _setCurrentNumber == 0.0) {
+      return _divErrorMessage = "Sorry, but I have no idea...";
+    } else if (_decimalFlag && _setCurrentNumber - intPart == 0.0) {
+      return _displayedNumber.toStringAsFixed(_numAfterPoint);
+    } else if (_displayedNumberAsString[_displayedNumberAsString.length - 1] !=
+            "0" &&
+        num == 0.0) {
+      return _displayedNumber.toStringAsFixed(_numAfterPoint);
+    } else if (_displayedNumber == _displayedNumber.toInt()) {
+      return _displayedNumber.toInt().toString();
     } else {
-      // 数値の入力
-      if(_decimalFlag) {
-        // 「整数 + "."」のパターンの時は入力された値を小数点数に変換して表示する
-        _numAfterPoint++;
-        _currentNumber = _currentNumber + int.parse(text) * Math.pow(0.1, _numAfterPoint);
-        // 「最初の0」のパターンの時は入力された値をそのまま表示する
-      } else if (_currentNumber == 0) {
-        _currentNumber = double.parse(text);
-        // 「整数 + 整数」のパターンの時は続けて入力された値をそのまま表示する
-      } else {
-        _currentNumber = _currentNumber * 10 + double.parse(text);
-      }
-    }
-
-    //出力する文字列のセット
-    if(_decimalFlag) {
-      //小数点以下の値があるときは、整数値 + "."
-      if(_numAfterPoint == 0) {
-        _text = formatter.format(_currentNumber) + ".";
-      } else {
-        _text = formatter.format(_currentNumber);
-      }
-    } else {
-      // 表示値は整数値で出力する
-      _text = formatter.format(_currentNumber);
+      return _displayedNumber.toString();
     }
   }
 }
