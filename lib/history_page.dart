@@ -1,62 +1,36 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
+import 'mysql.dart';
+import 'mysql.dart';
 
-class HistoryPage extends StatefulWidget {
-  // インスタンス変数を定義
-  final String title;
+class HistoryPage extends StatelessWidget {
+  HistoryPage(this.lists);
+  List<String> lists;
 
-  //コンストラクタ
-  HistoryPage(this.title);
+  Widget HistoryArea(String text, String colon, String result) {
+    return SizedBox(
+      child: Row(children: <Widget>[
+        Text(text),
+        Text(colon),
+        Text(result),
+      ]),
+    );
+  }
 
-  @override
-  State<HistoryPage> createState() => _HistoryPageState();
-}
-
-class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         //「widget.変数名」とすることで、NextPageクラスで定義した変数を使用できる
-        title: Text(widget.title),
+        title: Text("計算履歴"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
-        child: Column(
-          //Columnウィジェットはデフォルトで中央揃えのため、左揃えにする
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // Containerで箱詰めすると、インデントなどを揃えやすくなる
-                Container(
-                  child: Text("計算履歴"),
-                  width: 50,
-                ),
-                Container(
-                  child: Text(":"),
-                  width: 20,
-                ),
-                Text("計算履歴"),
-              ],
-            ),
-            Padding(padding: EdgeInsets.all(10)),
-            Row(
-              children: [
-                Container(
-                  child: Text("計算履歴"),
-                  width: 50,
-                ),
-                Container(
-                  child: Text(":"),
-                  width: 20,
-                ),
-                Text("計算履歴"),
-              ],
-            )
-          ],
-        ),
+        child: Column(children: <Widget>[
+          for (int i = 0; i < lists.length; i++) ...{
+            HistoryArea("計算履歴", ":", lists[i])
+          }
+        ]),
       ),
     );
   }
