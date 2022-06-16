@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   font_awesome_flutter: ^10.1.0
   intl: ^0.17.0
+  mysql1: ^0.19.2
+  flutter_dotenv: ^5.0.2
 
 dev_dependencies:
   flutter_test:
