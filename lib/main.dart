@@ -1,12 +1,19 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'mysql.dart';
 import 'history_page.dart';
 import 'dart:math' as Math;
-import 'logic.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// アプリを立ち上げ、MyAppクラスを呼び出す
-void main() {
+void main() async {
+  // To load the .env file contents into dotenv.
+  // NOTE: fileName defaults to .env and can be omitted in this case.
+  // Ensure that the filename corresponds to the path in step 1 and 2.
+  await dotenv.load(fileName: ".env");
+
   runApp(const MyApp());
 }
 
@@ -17,11 +24,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // エミュレーター右上の「debug」という帯を消す
-      debugShowCheckedModeBanner: false,
-      // MyHomePageクラスを呼び出し、画面の描画に移る
-      home: const MyHomePage(),
-    );
+        // エミュレーター右上の「debug」という帯を消す
+        debugShowCheckedModeBanner: false,
+        // MyHomePageクラスを呼び出し、画面の描画に移る
+        home: const MyHomePage());
   }
 }
 
@@ -43,13 +49,13 @@ class _MyHomePageState extends State<MyHomePage> {
   static const Color colorCalc = Colors.orange;
   static const Color colorText = Colors.white;
 
-  // 値を格納する変数
+  // 現在値を格納する変数
   double _setCurrentNumber = 0;
   // 値を表示する変数
   double _displayedNumber = 0;
   // 最初の値を保持する変数
   double _firstNum = 0;
-  // 小数点ボタンが押されたかどうかを示す変数
+  // 小数点ボタンが押されたかどうかを示すbool値
   bool _decimalFlag = false;
   // "."が押された後の数値の数をカウントする変数
   int _numAfterPoint = 0;
@@ -59,8 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
   String _divErrorMessage = "";
   // 画面上部に出力するメッセージ
   String _cheeringMessage = "";
+  // String型に変換した_displayedNumber
+  String _displayedNumberAsString = "";
 
-  Logic _logic = Logic();
+  MySQL _mysql = MySQL(); // MySQLクラスのインスタンスを作成
 
   // 実際に表示する値を形成するメソッド
   String _buildDisplayedNum(double _displayedNumber, double num) {
@@ -82,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  // 数値を画面に表示するメソッド
+  // 演算に使用する数値をセットするメソッド
   void _setCurrentNum(double num) {
     // 画面に出力できる最大値
     const maxValueNumber = 100000000;
@@ -96,10 +104,12 @@ class _MyHomePageState extends State<MyHomePage> {
           // 小数点"."が押されたとき
           else {
             _numAfterPoint++;
-            _displayedNumber = _displayedNumber + num * Math.pow(0.1, _numAfterPoint);
+            _displayedNumber =
+                _displayedNumber + num * Math.pow(0.1, _numAfterPoint);
             _checkDecimal();
           }
           _setCurrentNumber = _displayedNumber;
+          _divErrorMessage = "";
         });
       }
       // 表示値と格納値が違うなら、表示値は打ち込んだ値に更新する
@@ -108,11 +118,10 @@ class _MyHomePageState extends State<MyHomePage> {
         _displayedNumber = num;
         _setCurrentNumber = _displayedNumber;
         _operatorType = null;
+        _divErrorMessage = "";
       });
     }
   }
-
-  
 
   // 押された演算子の種類に応じて_firstNumに_setCurrentNumberを格納するメソッド
   void _setFirstNum(OperatorType type) {
@@ -289,15 +298,19 @@ class _MyHomePageState extends State<MyHomePage> {
               switch (_operatorType) {
                 case OperatorType.add:
                   _add();
+                  _mysql.manipulateDB(_displayedNumber);
                   break;
                 case OperatorType.sub:
                   _sub();
+                  _mysql.manipulateDB(_displayedNumber);
                   break;
                 case OperatorType.multi:
                   _multi();
+                  _mysql.manipulateDB(_displayedNumber);
                   break;
                 case OperatorType.div:
                   _div();
+                  _mysql.manipulateDB(_displayedNumber);
                   break;
                 default:
                   break;
@@ -324,8 +337,27 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            ElevatedButton(
+              child: Icon(
+                FontAwesomeIcons.database,
+                color: colorCalc,
+              ),
+              style: ElevatedButton.styleFrom(
+                side: BorderSide(
+                  color: Colors.black,
+                  width: 1,
+                  style: BorderStyle.none,
+                ),
+                primary: Colors.black,
+              ),
+              onPressed: () {
+                _mysql.main();
+                /// TODO 
+                /// データベースボタンを押したら色を変える処理を組む
+              },
+            ),
             ElevatedButton(
               child: Icon(FontAwesomeIcons.clockRotateLeft),
               style: ElevatedButton.styleFrom(
@@ -337,12 +369,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 primary: Colors.black,
               ),
               onPressed: () {
-                // 履歴表示ページへ遷移
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        //履歴ページへ値を送る
-                        builder: (context) => HistoryPage("計算履歴")));
+                if (_mysql.lists.length > 0) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          //履歴ページへ値を送る
+                          builder: (context) => HistoryPage(_mysql.lists)));
+                }
               },
             ),
           ],
