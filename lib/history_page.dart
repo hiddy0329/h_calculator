@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'mysql.dart';
-import 'mysql.dart';
 
 class HistoryPage extends StatelessWidget {
   HistoryPage(this.lists);
@@ -10,9 +9,27 @@ class HistoryPage extends StatelessWidget {
   Widget HistoryArea(String text, String colon, String result) {
     return SizedBox(
       child: Row(children: <Widget>[
-        Text(text),
-        Text(colon),
-        Text(result),
+        Container(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 30),
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.all(10),
+          child: Text(
+            colon,
+            style: TextStyle(fontSize: 30),
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.only(top: 5),
+          child: Text(
+            result,
+            textAlign: TextAlign.right,
+            style: TextStyle(fontSize: 30),
+          ),
+        ),
       ]),
     );
   }
@@ -26,11 +43,13 @@ class HistoryPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
-        child: Column(children: <Widget>[
-          for (int i = 0; i < lists.length; i++) ...{
-            HistoryArea("計算履歴", ":", lists[i])
-          }
-        ]),
+        child: ListView.builder(
+            padding: EdgeInsets.all(20.0),
+            shrinkWrap: true,
+            itemCount: lists.length,
+            itemBuilder: (BuildContext context, int index) {
+              return HistoryArea("計算履歴${index + 1}", ":", lists[index]);
+            }),
       ),
     );
   }
