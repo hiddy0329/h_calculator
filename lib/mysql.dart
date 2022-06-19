@@ -6,10 +6,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class MySQL {
   String sql = "";
   List<String> lists = [];
+  List<String> userList = [];
   var conn;
 
   // mainメソッドが実行されたかどうかを判断するbool値
-  bool mainExec = false;
+  bool dbLoadExec = false;
 
   Future main() async {
     await dotenv.load();
@@ -22,11 +23,11 @@ class MySQL {
       password: (dotenv.env['PASSWORD']).toString(),
     ));
 
-    mainExec = true;
+    dbLoadExec = true;
   }
 
-  Future manipulateDB(double _displayedNumber) async {
-    if (mainExec == true) {
+  Future manipulateCalcDB(double _displayedNumber) async {
+    if (dbLoadExec == true) {
       sql = '''
           SELECT 
             result 
@@ -49,9 +50,31 @@ class MySQL {
       }
     }
   }
-}
 
-    
+  Future manipulateUserDB(String username, String password) async {
+    if (dbLoadExec == true) {
+      sql = '''
+          SELECT 
+            * 
+          FROM 
+            `users` 
+      ''';
+
+      // Insert some data
+      var result = await conn.query(
+          'insert into users (username, password) values (?, ?)',
+          [username, password]);
+
+      // Query the database using a parameterized query
+      var results = (await conn.query(sql));
+      userList.clear();
+      for (var row in results) {
+        userList.add('${row[1]}, ${row[2]}');
+      }
+      print(userList);
+    }
+  }
+}
 
   // // Update some data
   // await conn.query(
