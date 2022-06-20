@@ -79,12 +79,15 @@ class _MyHomePageState extends State<MyHomePage> {
     // 0で割った場合はエラーメッセージを表示
     if (_operatorType == OperatorType.div && _setCurrentNumber == 0.0) {
       return _divErrorMessage = "Sorry, but I have no idea...";
+    // 小数点以下があり、数値から整数部分を引くと0になる「1.0」のような場合
     } else if (_decimalFlag && _setCurrentNumber - intPart == 0.0) {
       return _displayedNumber.toStringAsFixed(_numAfterPoint);
+    // 「1.200」のように小数点第2位以下に0が続く場合
     } else if (_displayedNumberAsString[_displayedNumberAsString.length - 1] !=
             "0" &&
         num == 0.0) {
       return _displayedNumber.toStringAsFixed(_numAfterPoint);
+    // 整数値の時
     } else if (_displayedNumber == _displayedNumber.toInt()) {
       return _displayedNumber.toInt().toString();
     } else {
@@ -219,10 +222,12 @@ class _MyHomePageState extends State<MyHomePage> {
       String _displayedNumberAsString = _displayedNumber.toString();
       // double型を文字列に変えたため、デフォルトで文字数が「3」になる
       if (_displayedNumberAsString.length > 3) {
+        // 単なる整数値の時
         if (_displayedNumberAsString[_displayedNumberAsString.length - 1] ==
             "0") {
           _displayedNumberAsString = _displayedNumberAsString.substring(
               0, _displayedNumberAsString.length - 3);
+        // 「1.0や1.002」のように小数点以下に.0を含む場合
         } else if (_displayedNumberAsString.contains(".0")) {
           _displayedNumberAsString = _displayedNumberAsString.substring(
               0, _displayedNumberAsString.length - 1);
@@ -230,6 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _displayedNumberAsString = _displayedNumberAsString.substring(
               0, _displayedNumberAsString.length - 1);
         }
+        // 0.0005などの時、5を削除すると「0.0」になってしまい、いきなり「0」になる。
         _displayedNumber = double.parse(_displayedNumberAsString);
         _decimalFlag = false;
         _numAfterPoint--;
@@ -415,7 +421,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         : (_operatorType != null &&
                                 _displayedNumber == _displayedNumber.toInt())
                             ? _buildDisplayedNum(_displayedNumber, 0.0)
-                            : _displayedNumber.toString(),
+                            : _displayedNumberAsString,
                     style: TextStyle(
                         fontSize:
                             (_divErrorMessage == "Sorry, but I have no idea...")
