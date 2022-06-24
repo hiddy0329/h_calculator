@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'history_page.dart';
 import 'package:mysql1/mysql1.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -7,14 +6,15 @@ class MySQL {
   String sql = "";
   List<String> lists = [];
   List<String> userList = [];
+  // ignore: prefer_typing_uninitialized_variables
   var conn;
 
   // mainメソッドが実行されたかどうかを判断するbool値
-  bool dbLoadExec = false;
+  bool dbConnectExec = false;
 
-  Future main() async {
+  Future dbConnect() async {
     await dotenv.load();
-    // Open a connection (testdb should already exist)
+    // Open a connection
     conn = await MySqlConnection.connect(ConnectionSettings(
       host: (dotenv.env['HOST']).toString(),
       port: int.parse(dotenv.get('PORT')),
@@ -23,24 +23,25 @@ class MySQL {
       password: (dotenv.env['PASSWORD']).toString(),
     ));
 
-    dbLoadExec = true;
+    dbConnectExec = true;
   }
 
-  Future manipulateCalcDB(double _displayedNumber) async {
-    if (dbLoadExec == true) {
+  Future manipulateCalcDB(double displayedNumber, String userId) async {
+    if (dbConnectExec == true && displayedNumber != double.infinity) {
       sql = '''
           SELECT 
             result 
           FROM 
             `calculations` 
+          Where
+            user_id = '$userId'
           ORDER BY id DESC LIMIT 10
     ''';
 
       // Insert some data
       var result = await conn.query(
           'insert into calculations (result, user_id) values (?, ?)',
-          [_displayedNumber.toString(), '1']);
-      // print('Inserted row id=${result.insertId}');
+          [displayedNumber.toString(), userId]);
 
       // Query the database using a parameterized query
       var results = (await conn.query(sql));
@@ -51,30 +52,41 @@ class MySQL {
     }
   }
 
-  Future manipulateUserDB(String username, String password) async {
-    if (dbLoadExec == true) {
+  Future insertUserDB(String username, String password) async {
+    if (dbConnectExec == true) {
+      // Insert some data
+      var result = await conn.query(
+          'insert into users (username, password) values (?, ?)',
+          [username, password]);
+    }
+  }
+
+  Future selectFromUserDB(String username, String password) async {
+    if (dbConnectExec == true) {
       sql = '''
           SELECT 
             * 
           FROM 
             `users` 
+          Where
+            username = '$username' 
+          AND
+            password = '$password';
       ''';
-
-      // Insert some data
-      var result = await conn.query(
-          'insert into users (username, password) values (?, ?)',
-          [username, password]);
 
       // Query the database using a parameterized query
       var results = (await conn.query(sql));
       userList.clear();
       for (var row in results) {
-        userList.add('${row[1]}, ${row[2]}');
+        userList.add('${row[0]}');
+        userList.add('${row[1]}');
+        userList.add('${row[2]}');
       }
-      print(userList);
     }
   }
 }
+
+
 
   // // Update some data
   // await conn.query(
