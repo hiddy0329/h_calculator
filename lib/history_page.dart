@@ -1,56 +1,90 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'mysql.dart';
 
 class HistoryPage extends StatelessWidget {
-  HistoryPage(this.lists);
-  List<String> lists;
+  const HistoryPage(this.lists, this.username, {Key? key}) : super(key: key);
+  final List<String> lists;
+  final String username;
 
-  Widget HistoryArea(String text, String colon, String result) {
+  // フォント設定
+  static const String font = 'Roboto';
+
+  Widget historyArea(String text, String colon, String result) {
     return SizedBox(
-      child: Row(children: <Widget>[
-        Container(
-          child: Text(
-            text,
-            style: TextStyle(fontSize: 30),
-          ),
-        ),
-        Container(
-          padding: EdgeInsets.all(10),
-          child: Text(
-            colon,
-            style: TextStyle(fontSize: 30),
-          ),
-        ),
-        Container(
-          padding: EdgeInsets.only(top: 5),
-          child: Text(
-            result,
-            textAlign: TextAlign.right,
-            style: TextStyle(fontSize: 30),
-          ),
-        ),
-      ]),
+      child: Column(
+        children: [
+          Row(children: <Widget>[
+            Expanded(
+              flex: 3,
+              child: Text(
+                text,
+                style: const TextStyle(fontFamily: font, fontSize: 22),
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                colon,
+                style: const TextStyle(fontFamily: font, fontSize: 20),
+              ),
+            ),
+            Expanded(
+              flex: 5,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 5.0),
+                child: Text(
+                  result,
+                  style: const TextStyle(fontFamily: font, fontSize: 24),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            )
+          ]),
+          const Divider(color: Colors.blueGrey),
+          const SizedBox(height: 30.0),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        //「widget.変数名」とすることで、NextPageクラスで定義した変数を使用できる
-        title: Text("計算履歴"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(30.0),
-        child: ListView.builder(
-            padding: EdgeInsets.all(20.0),
-            shrinkWrap: true,
-            itemCount: lists.length,
-            itemBuilder: (BuildContext context, int index) {
-              return HistoryArea("計算履歴${index + 1}", ":", lists[index]);
-            }),
-      ),
-    );
+        backgroundColor: Colors.indigo[100],
+        appBar: AppBar(
+          title: FittedBox(
+              child: Text("$username's history <DESC>",
+                  style: const TextStyle(
+                    fontFamily: font,
+                  ))),
+          backgroundColor: Colors.blueGrey[900],
+        ),
+        body: (lists.isNotEmpty)
+            ? Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: ListView.builder(
+                    padding: const EdgeInsets.all(20.0),
+                    shrinkWrap: true,
+                    itemCount: lists.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return historyArea(
+                          "history${index + 1}", ":", lists[index]);
+                    }),
+              )
+            : Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text(
+                      "You have no history...",
+                      style: TextStyle(fontFamily: font, fontSize: 25.0),
+                    ),
+                    Text(
+                      "Please execute calculation so that I can show your history. ",
+                      style: TextStyle(fontFamily: font, fontSize: 25.0),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                )));
   }
 }
