@@ -45,10 +45,12 @@ class _MyHomePageState extends State<MyHomePage> {
   OperatorType? _operatorType;
   // 画面上部に出力するメッセージ
   String _cheeringMessage = "";
-
+  // String型に変換したdisplayedNumber
   String displayedNumberAsString = "";
-
+  // 画面上に表示する内容を格納する変数
   String text = "";
+  // データベースに保存する計算式の部分を格納するリスト
+  List<String> formula = [];
 
   final MySQL _mysql = MySQL(); // MySQLクラスのインスタンスを作成
 
@@ -127,11 +129,31 @@ class _MyHomePageState extends State<MyHomePage> {
   void _setFirstNum(OperatorType type) {
     // 演算結果を次の_firstNumにする
     if (_operatorType == null) {
+      _operatorType = type;
       _setCurrentNumber = displayedNumber;
       _firstNum = _setCurrentNumber;
+        switch (_operatorType) {
+                  case OperatorType.add:
+                    formula.add(_firstNum.toString());
+                    formula.add("+");
+                    break;
+                  case OperatorType.sub:
+                    formula.add(_firstNum.toString());
+                    formula.add("-");
+                    break;
+                  case OperatorType.multi:
+                    formula.add(_firstNum.toString());
+                    formula.add("×");
+                    break;
+                  case OperatorType.div:
+                    formula.add(_firstNum.toString());
+                    formula.add("÷");
+                    break;
+                  default:
+                    break;
+                }
       _setCurrentNumber = 0;
       displayedNumber = 0;
-      _operatorType = type;
       _decimalFlag = false;
       _numAfterPoint = 0;
       _cheeringMessage = "";
@@ -147,6 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // _operatorTypeが「add」なら足し算を実行するメソッド
   void _add() {
     setState(() {
+      formula.add(_setCurrentNumber.toString());
       displayedNumber = _firstNum + _setCurrentNumber;
       _checkDecimal();
       _firstNum = displayedNumber;
@@ -291,23 +314,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 _setFirstNum(OperatorType.add);
                 break;
               case "=":
-                await _mysql.dbConnect();
+                // await _mysql.dbConnect();
                 switch (_operatorType) {
                   case OperatorType.add:
                     _add();
-                    _mysql.manipulateCalcDB(displayedNumber, widget.userId);
+                    // 計算式、計算結果、ユーザーidをデータベースへ送る
+                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
                     break;
                   case OperatorType.sub:
                     _sub();
-                    _mysql.manipulateCalcDB(displayedNumber, widget.userId);
+                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
                     break;
                   case OperatorType.multi:
                     _multi();
-                    _mysql.manipulateCalcDB(displayedNumber, widget.userId);
+                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
                     break;
                   case OperatorType.div:
                     _div();
-                    _mysql.manipulateCalcDB(displayedNumber, widget.userId);
+                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
                     break;
                   default:
                     break;

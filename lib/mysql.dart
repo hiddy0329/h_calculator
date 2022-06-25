@@ -26,11 +26,11 @@ class MySQL {
     dbConnectExec = true;
   }
 
-  Future manipulateCalcDB(double displayedNumber, String userId) async {
+  Future manipulateCalcDB(List<String> formula, double displayedNumber, String userId) async {
     if (dbConnectExec == true && displayedNumber != double.infinity) {
       sql = '''
           SELECT 
-            result 
+            formula, result 
           FROM 
             `calculations` 
           Where
@@ -40,14 +40,15 @@ class MySQL {
 
       // Insert some data
       var result = await conn.query(
-          'insert into calculations (result, user_id) values (?, ?)',
-          [displayedNumber.toString(), userId]);
+          'insert into calculations (formula, result, user_id) values (?, ?, ?)',
+          [formula, displayedNumber.toString(), userId]);
 
       // Query the database using a parameterized query
       var results = (await conn.query(sql));
       lists.clear();
       for (var row in results) {
         lists.add('${row[0]}');
+        lists.add('${row[1]}');
       }
     }
   }
