@@ -494,3 +494,6 @@ class _MyHomePageState extends State<MyHomePage> {
     properties.add(EnumProperty<OperatorType>('_operatorType', _operatorType));
   }
 }
+
+//TODO イコールを押した時のデータベース登録
+//TODO ロジックの切り分け
