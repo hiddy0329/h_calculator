@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'mysql.dart';
 import 'history_page.dart';
 import 'dart:math' as math;
+import 'package:intl/intl.dart' as intl;
 
 class MyHomePage extends StatefulWidget {
   final String userId;
@@ -31,207 +32,188 @@ class _MyHomePageState extends State<MyHomePage> {
   // フォント設定
   static const String font = 'Roboto';
 
-  // 現在値を格納する変数
-  double _setCurrentNumber = 0;
+  String txtResult = "0";
+
+  // 画面上に表示する内容を格納する変数
+  String text = "";
+
   // 値を表示する変数
   double displayedNumber = 0;
-  // 最初の値を保持する変数
-  double _firstNum = 0;
+
+  // 現在値を格納する変数
+  double _setCurrentNumber = 0;
+
+  // 画面に出力できる最大値
+  static const MAX_DEGIT = 9;
+
+  //掛け算・割り算の結果を保持する変数
+  double _memorialValue = 0;
+
+  //足し算・引き算の結果を保持する変数
+  double _previousValue = 0;
+
+  //掛け算・割り算の演算子を記録しておく変数
+  String _previousOperation = "";
+
+  //足し算・引き算の演算子を記録しておく変数
+  String _memorialOperation = "";
+
   // 小数点ボタンが押されたかどうかを示すbool値
   bool _decimalFlag = false;
+
   // "."が押された後の数値の数をカウントする変数
   int _numAfterPoint = 0;
+
+  //桁区切り実装用
+  intl.NumberFormat formatter = intl.NumberFormat('#,###.########', 'en_US');
+
+  // 最初の値を保持する変数
+  double _firstNum = 0;
+
   // enum値を示す変数
   OperatorType? _operatorType;
   // 画面上部に出力するメッセージ
   String _cheeringMessage = "";
   // String型に変換したdisplayedNumber
   String displayedNumberAsString = "";
-  // 画面上に表示する内容を格納する変数
-  String text = "";
   // データベースに保存する計算式の部分を格納するリスト
   List<String> formula = [];
 
   final MySQL _mysql = MySQL(); // MySQLクラスのインスタンスを作成
 
-  // 実際に表示する値を形成するメソッド
-  String _buildDisplayedNum(double displayedNumber) {
-    try {
-      int intPart = _setCurrentNumber.toInt();
-      displayedNumberAsString = displayedNumber.toString();
-      // 単なる小数点数、もしくは小数点が押された後に「0」が押された場合（例：1.2, 3.0, 3.02）
-      if (_decimalFlag && displayedNumberAsString.contains(".0")) {
-        return displayedNumber.toStringAsFixed(_numAfterPoint);
-      } else if (_decimalFlag ||
-          _decimalFlag && _setCurrentNumber - intPart == 0.0) {
-        return displayedNumberAsString;
-        // 単なる整数値の時（例：12.0）
-      } else if (displayedNumberAsString[displayedNumberAsString.length - 1] ==
-          "0") {
-        _numAfterPoint = 0;
-        return displayedNumber.toInt().toString();
-        // 割り算の結果が割り切れないときなどを含むその他
+  //入力値をセットするメソッド
+  void input(String text) {
+    setState(() {
+      if (text == ".") {
+      _decimalFlag = true;
+      //入力値が"="の時
+    } else if (text == "=") {
+      if (_previousOperation == "×" || _previousOperation == "÷") {
+        double result = (_previousOperation == "×")
+            ? _previousValue * _setCurrentNumber
+            : _previousValue / _setCurrentNumber;
+
+        displayedNumber = (_memorialOperation == "-")
+            ? _memorialValue - result
+            : _memorialValue + result;
+      } else if (_memorialOperation == "+") {
+        displayedNumber = _memorialValue + _setCurrentNumber;
       } else {
-        return displayedNumber.toString();
+        displayedNumber = _memorialValue - _setCurrentNumber;
       }
-    } catch (e) {
-      return e.toString();
-    }
-  }
 
-  // 演算に使用する数値をセットするメソッド
-  void _setCurrentNum(double num) {
-    // 画面に出力できる最大値
-    const maxValueNumber = 100000000;
-    displayedNumberAsString = displayedNumber.toString();
-    // displayedNumber == _setCurrentNumber、つまり、表示値と格納値が同じならば以下の処理を行う
-    if (displayedNumber == _setCurrentNumber) {
-      if (displayedNumber < maxValueNumber) {
-        setState(() {
-          // 小数点が存在していなければ(=表示値が整数ならば)以下の処理を行う
-          if (!_decimalFlag) {
-            if (displayedNumber >= 0) {
-              displayedNumber = displayedNumber * 10 + num;
-            } else {
-              displayedNumber = displayedNumber * 10 - num;
-            }
-          }
-          // 小数点"."が押されたとき
-          else {
-            if (displayedNumberAsString.length < 10) {
-              _numAfterPoint++;
-              if (displayedNumber >= 0) {
-                displayedNumber =
-                    displayedNumber + num * math.pow(0.1, _numAfterPoint);
-                _checkDecimal();
-              } else {
-                displayedNumber =
-                    displayedNumber - num * math.pow(0.1, _numAfterPoint);
-                _checkDecimal();
-              }
-            }
-          }
-          _setCurrentNumber = displayedNumber;
-        });
-      }
-    }
-    // 表示値と格納値が違うなら、表示値は打ち込んだ値に更新する
-    else {
-      setState(() {
-        displayedNumber = num;
-        _setCurrentNumber = displayedNumber;
-        _operatorType = null;
-      });
-    }
-  }
-
-  // 押された演算子の種類に応じて_firstNumに_setCurrentNumberを格納するメソッド
-  void _setFirstNum(OperatorType type) {
-    // 演算結果を次の_firstNumにする
-    if (_operatorType == null) {
-      _operatorType = type;
-      _setCurrentNumber = displayedNumber;
-      _firstNum = _setCurrentNumber;
-        switch (_operatorType) {
-                  case OperatorType.add:
-                    formula.add(_firstNum.toString());
-                    formula.add("+");
-                    break;
-                  case OperatorType.sub:
-                    formula.add(_firstNum.toString());
-                    formula.add("-");
-                    break;
-                  case OperatorType.multi:
-                    formula.add(_firstNum.toString());
-                    formula.add("×");
-                    break;
-                  case OperatorType.div:
-                    formula.add(_firstNum.toString());
-                    formula.add("÷");
-                    break;
-                  default:
-                    break;
-                }
-      _setCurrentNumber = 0;
-      displayedNumber = 0;
-      _decimalFlag = false;
-      _numAfterPoint = 0;
-      _cheeringMessage = "";
-    } else if (_operatorType != null) {
-      _operatorType = type;
-      _setCurrentNumber = 0;
-      displayedNumber = 0;
-      _decimalFlag = false;
-      _numAfterPoint = 0;
-    }
-  }
-
-  // _operatorTypeが「add」なら足し算を実行するメソッド
-  void _add() {
-    setState(() {
-      formula.add(_setCurrentNumber.toString());
-      displayedNumber = _firstNum + _setCurrentNumber;
-      _checkDecimal();
-      _firstNum = displayedNumber;
-      _cheeringMessage = "Nice Job!";
-    });
-  }
-
-  // _operatorTypeが「sub」なら引き算を実行するメソッド
-  void _sub() {
-    setState(() {
-      displayedNumber = _firstNum - _setCurrentNumber;
-      _checkDecimal();
-      _firstNum = displayedNumber;
-      _cheeringMessage = "Perfect!";
-    });
-  }
-
-  // _operatorTypeが「multi」なら掛け算を実行するメソッド
-  void _multi() {
-    setState(() {
-      displayedNumber = _firstNum * _setCurrentNumber;
-      _checkDecimal();
-      _firstNum = displayedNumber;
-      _cheeringMessage = "Excellent!";
-    });
-  }
-
-  // _operatorTypeが「div」なら割り算を実行するメソッド
-  void _div() {
-    setState(() {
-      displayedNumber = _firstNum / _setCurrentNumber;
-      _checkDecimal();
-      _firstNum = displayedNumber;
-      if (displayedNumber == double.infinity) {
-        _cheeringMessage = "Sorry, but I have no idea...";
+      clear();
+      //入力された値が"×", "÷"の時
+    } else if (text == "×" || text == "÷") {
+      //初めて"×", "÷"が押されたならば
+      if (_previousOperation == "") {
+        _previousValue = _setCurrentNumber;
+      } else if (_previousOperation == "×") {
+        //直前にセットされた値と新しく入力された値を掛ける
+        _previousValue = _previousValue * _setCurrentNumber;
       } else {
-        _cheeringMessage = "Amazing!";
+        _previousValue = _previousValue / _setCurrentNumber;
       }
-    });
-  }
+      displayedNumber = _previousValue;
+      _setCurrentNumber = 0;
+      _previousOperation = text;
+    } else if (text == "+" || text == "-") {
+      if (_previousOperation == "×") {
+        _memorialValue = _previousValue * _setCurrentNumber;
+        _previousValue = 0;
+        _previousOperation = "";
+      } else if (_previousOperation == "÷") {
+        _memorialValue = _previousValue / _setCurrentNumber;
+        _previousValue = 0;
+        _previousOperation = "";
+      } else if (_memorialOperation == "") {
+        _memorialValue = _setCurrentNumber;
+      } else if (_memorialOperation == "+") {
+        _memorialValue = _memorialValue + _setCurrentNumber;
+      } else if (_memorialOperation == "-") {
+        _memorialValue = _memorialValue - _setCurrentNumber;
+      }
 
-  void _checkDecimal() {
-    double checkNumber = displayedNumber;
-    if (100000000 < displayedNumber ||
-        displayedNumber == displayedNumber.toInt()) {
-      int count;
-      for (int i = 0; 100000000 < displayedNumber / math.pow(10, i); i++) {
-        count = i;
-        checkNumber = checkNumber / 10;
-      }
-      setState(() {
-        displayedNumber = checkNumber;
-      });
+      displayedNumber = _memorialValue;
+      _setCurrentNumber = 0;
+      _memorialOperation = text;
     } else {
-      int count = 0;
-      for (int i = 0; 1 < displayedNumber / math.pow(10, i); i++) {
-        count = i;
+      int degit = getDegit(_setCurrentNumber);
+
+      // 整数部分と少数部分を合わせて表示桁数が9桁以上は表示させない
+      if (degit + _numAfterPoint == MAX_DEGIT) {
+        //処理なし
+      } else if (_decimalFlag) {
+        _numAfterPoint++;
+        if (displayedNumber > 0) {
+          _setCurrentNumber =
+            _setCurrentNumber + int.parse(text) * math.pow(0.1, _numAfterPoint);
+        } else {
+          _setCurrentNumber =
+          _setCurrentNumber - int.parse(text) * math.pow(0.1, _numAfterPoint);
+        }
+        // 整数を入力した時、初期状態だった時
+      } else if (_setCurrentNumber == 0) {
+        _setCurrentNumber = double.parse(text);
+        // 連続入力対応
+      } else {
+        if (displayedNumber > 0) {
+          _setCurrentNumber = _setCurrentNumber * 10 + double.parse(text);
+        } else {
+          _setCurrentNumber = _setCurrentNumber * 10 - double.parse(text);
+        }
+        
       }
-      int displayCount = 10 - count;
-      displayedNumber =
-          double.parse(displayedNumber.toStringAsFixed(displayCount));
+      //最終的にgetDisplayTextメソッドに送る数値を決定
+      displayedNumber = _setCurrentNumber;
     }
+    });
+    
+  }
+
+  //各値をクリアするメソッド
+  void clear() {
+    setState(() {
+    _setCurrentNumber = 0;
+    _previousValue = 0;
+    _memorialValue = 0;
+    _previousOperation = "";
+    _memorialOperation = "";
+    });
+  }
+
+  //画面表示用テキスト作成メソッド(小数点以下がない時は-1を取得)
+  String getDisplayText(double value, {int numAfterPoint = -1}) {
+    // 少数の時
+    if (numAfterPoint != -1) {
+      int intPart = value.toInt();
+      // 初めて"."が押された時
+      if (_numAfterPoint == 0) {
+        return formatter.format(value) + ".";
+        // "1.003などへの対応
+      } else if (intPart == value) {
+        //文字列の足し算のため、「333」+「0.0」は「3330.0」となってしまうのを回避する
+        return formatter.format(intPart) +
+            (value - intPart).toStringAsFixed(numAfterPoint).substring(1);
+      }
+    }
+    // 単なる整数の時
+    return formatter.format(value);
+  }
+
+  //桁数を取得するメソッド
+  int getDegit(double value) {
+    int i = 0;
+    if (value > 0) {
+      for (; 10 <= value; i++) {
+      value = value / 10;
+      }
+    } else {
+      for (; value <= -10; i++) {
+      value = value / 10;
+    }
+    }
+    return i + 1;
   }
 
   // 数値の符号を切り替えるメソッド
@@ -268,11 +250,13 @@ class _MyHomePageState extends State<MyHomePage> {
   // 画面上の数値をオールクリアするメソッド
   void _clearNum() {
     setState(() {
-      _setCurrentNumber = 0;
       displayedNumber = 0;
-      _firstNum = 0;
+      _setCurrentNumber = 0;
+      _previousValue = 0;
+      _memorialValue = 0;
+      _previousOperation = "";
+      _memorialOperation = "";
       // _operatorTypeも初期化したい
-      _operatorType = null;
       _decimalFlag = false;
       _cheeringMessage = "All Clear!";
       _numAfterPoint = 0;
@@ -287,11 +271,8 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Padding(
         padding: const EdgeInsets.all(1.0),
         child: ElevatedButton(
-          onPressed: () async {
+          onPressed: () {
             switch (text) {
-              case ".":
-                _decimalFlag = true;
-                break;
               case "AC":
                 _clearNum();
                 break;
@@ -301,44 +282,9 @@ class _MyHomePageState extends State<MyHomePage> {
               case "Del":
                 _deleteOnesPlace();
                 break;
-              case "÷":
-                _setFirstNum(OperatorType.div);
-                break;
-              case "×":
-                _setFirstNum(OperatorType.multi);
-                break;
-              case "-":
-                _setFirstNum(OperatorType.sub);
-                break;
-              case "+":
-                _setFirstNum(OperatorType.add);
-                break;
-              case "=":
-                // await _mysql.dbConnect();
-                switch (_operatorType) {
-                  case OperatorType.add:
-                    _add();
-                    // 計算式、計算結果、ユーザーidをデータベースへ送る
-                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
-                    break;
-                  case OperatorType.sub:
-                    _sub();
-                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
-                    break;
-                  case OperatorType.multi:
-                    _multi();
-                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
-                    break;
-                  case OperatorType.div:
-                    _div();
-                    _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
-                    break;
-                  default:
-                    break;
-                }
-                break;
               default:
-                _setCurrentNum(double.parse(text));
+                  _cheeringMessage = "";
+                  input(text);
                 break;
             }
           },
@@ -461,7 +407,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 flex: 1,
                 child: FittedBox(
                   child: Text(
-                    text = _buildDisplayedNum(displayedNumber),
+                    (_decimalFlag) ?
+      text = getDisplayText(displayedNumber, numAfterPoint: _numAfterPoint)
+  : text = getDisplayText(displayedNumber),
+    
                     style: TextStyle(
                         fontFamily: font, fontSize: 75.0, color: colorNum),
                   ),

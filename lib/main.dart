@@ -129,24 +129,25 @@ class _LoginPageState extends State<LoginPage> {
 
   // ログイン判定のためのメソッド
   Future _checkLogin() async {
-    if (_mysql.dbConnectExec == true) {
-      await _mysql.selectFromUserDB(loginUsername, loginPassword);
-      // ログインできるかどうかの判定
-      if (_mysql.userList.contains(loginUsername) &&
-          _mysql.userList.contains(loginPassword)) {
-        // Shared_preferenceを利用してユーザーidを端末保存
-        await setUserInfo();
-        await getUserInfo();
-        _navigateNextPage();
-        setState(() {
-          _clearText();
-        });
-      } else {
-        _getErrorMessage();
-      }
-    } else {
-      _getErrorMessage();
-    }
+    _navigateNextPage();
+    // if (_mysql.dbConnectExec == true) {
+    //   await _mysql.selectFromUserDB(loginUsername, loginPassword);
+    //   // ログインできるかどうかの判定
+    //   if (_mysql.userList.contains(loginUsername) &&
+    //       _mysql.userList.contains(loginPassword)) {
+    //     // Shared_preferenceを利用してユーザーidを端末保存
+    //     await setUserInfo();
+    //     await getUserInfo();
+    //     _navigateNextPage();
+    //     setState(() {
+    //       _clearText();
+    //     });
+    //   } else {
+    //     _getErrorMessage();
+    //   }
+    // } else {
+    //   _getErrorMessage();
+    // }
   }
 
   // ユーザー登録用のメソッド
