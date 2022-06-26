@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 class HistoryPage extends StatelessWidget {
-  const HistoryPage(this.lists, this.username, {Key? key}) : super(key: key);
-  final List<String> lists;
+  const HistoryPage(this.formulaLists, this.resultLists, this.username, {Key? key}) : super(key: key);
+  final List<String> formulaLists;
+  final List<String> resultLists;
   final String username;
 
   // フォント設定
   static const String font = 'Roboto';
 
-  Widget historyArea(String text, String colon, String result) {
+  Widget historyArea(String text, String colon, String formula, String result) {
     return SizedBox(
       child: Column(
         children: [
@@ -21,14 +22,21 @@ class HistoryPage extends StatelessWidget {
               ),
             ),
             Expanded(
-              flex: 2,
+              flex: 1,
               child: Text(
                 colon,
                 style: const TextStyle(fontFamily: font, fontSize: 20),
               ),
             ),
             Expanded(
-              flex: 5,
+              flex: 2,
+              child: Text(
+                formula,
+                style: const TextStyle(fontFamily: font, fontSize: 20),
+              ),
+            ),
+            Expanded(
+              flex: 4,
               child: Padding(
                 padding: const EdgeInsets.only(top: 5.0),
                 child: Text(
@@ -58,16 +66,16 @@ class HistoryPage extends StatelessWidget {
                   ))),
           backgroundColor: Colors.blueGrey[900],
         ),
-        body: (lists.isNotEmpty)
+        body: (formulaLists.isNotEmpty && resultLists.isNotEmpty)
             ? Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: ListView.builder(
                     padding: const EdgeInsets.all(20.0),
                     shrinkWrap: true,
-                    itemCount: lists.length,
+                    itemCount: formulaLists.length,
                     itemBuilder: (BuildContext context, int index) {
                       return historyArea(
-                          "history${index + 1}", ":", lists[index]);
+                          "history${index + 1}", ":", formulaLists[index], resultLists[index]);
                     }),
               )
             : Padding(

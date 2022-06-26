@@ -32,8 +32,6 @@ class _MyHomePageState extends State<MyHomePage> {
   // フォント設定
   static const String font = 'Roboto';
 
-  String txtResult = "0";
-
   // 画面上に表示する内容を格納する変数
   String text = "";
 
@@ -69,10 +67,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 画面上部に出力するメッセージ
   String _cheeringMessage = "";
+
   // String型に変換したdisplayedNumber
   String displayedNumberAsString = "";
+
   // データベースに保存する計算式の部分を格納するリスト
-  List<String> formula = [];
+  String formula = "";
 
   final MySQL _mysql = MySQL(); // MySQLクラスのインスタンスを作成
 
@@ -81,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       if (text == ".") {
       _decimalFlag = true;
+      formula += '${text}';
     } else {
       int degit = getDegit(_setCurrentNumber);
 
@@ -110,7 +111,8 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       //最終的にgetDisplayTextメソッドに送る数値を決定
       displayedNumber = _setCurrentNumber;
-
+      _cheeringMessage = "";
+      formula += '${text}';
     }
     });
     
@@ -202,7 +204,24 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  // 押された演算子の種類に応じて_firstNumに_setCurrentNumberを格納するメソッド
+  // 計算結果に応じて表示するメッセージを切り替えるメソッド
+  void _getCheeringMessage() {
+    setState(() {
+      if (_previousOperation == "×") {
+      _cheeringMessage = "Excellent!";
+    } else if (displayedNumber == double.infinity) {
+      _cheeringMessage = "Sorry, but I have no idea...";
+    } else if (_previousOperation == "÷") {
+      _cheeringMessage = "Perfect!";
+    } else if (_memorialOperation == "+") {
+      _cheeringMessage = "Nice Job!";
+    } else {
+      _cheeringMessage = "Awesome!";
+    }
+    });
+  }
+
+  // 途中計算を行うメソッド
   void _halfwayCalculation(String operatorType) {
     setState(() {
       if (operatorType == "×" || operatorType == "÷") {
@@ -219,6 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _numAfterPoint = 0;
       _decimalFlag = false;
       _previousOperation = operatorType;
+      formula += ' ${_previousOperation} ';
     } else if (operatorType == "+" || operatorType == "-") {
       if (_previousOperation == "×") {
         _memorialValue = _previousValue * _setCurrentNumber;
@@ -241,10 +261,12 @@ class _MyHomePageState extends State<MyHomePage> {
       _numAfterPoint = 0;
       _decimalFlag = false;
       _memorialOperation = operatorType;
+      formula += ' ${_memorialOperation} ';
     }
     });
   }
 
+  // 最終的な計算結果を求めるメソッド
   void _finalCalculation() {
     setState(() {
       if (_previousOperation == "×" || _previousOperation == "÷") {
@@ -260,12 +282,13 @@ class _MyHomePageState extends State<MyHomePage> {
       } else {
         displayedNumber = _memorialValue - _setCurrentNumber;
       }
-      
+      _getCheeringMessage();
       _setCurrentNumber = displayedNumber;
       _previousValue = 0;
       _memorialValue = 0;
       _numAfterPoint = 0;
       _decimalFlag = false;
+      formula += ' =';
     });
   }
   
@@ -277,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Padding(
         padding: const EdgeInsets.all(1.0),
         child: ElevatedButton(
-          onPressed: () {
+          onPressed: () async{
             switch (text) {
               case "AC":
                 _clearNum();
@@ -302,6 +325,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 break;
               case "=":
                 _finalCalculation();
+                await _mysql.manipulateCalcDB(formula, displayedNumber, widget.userId);
+                formula = "";
                 break;
               default:
                 input(text);
@@ -384,7 +409,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         PageRouteBuilder(
                           pageBuilder:
                               (context, animation, secondaryAnimation) {
-                            return HistoryPage(_mysql.lists, widget.username);
+                            return HistoryPage(_mysql.formulaLists, _mysql.resultLists, widget.username);
                           },
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {

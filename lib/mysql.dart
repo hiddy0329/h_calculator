@@ -4,7 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MySQL {
   String sql = "";
-  List<String> lists = [];
+  List<String> resultLists = [];
+  List<String> formulaLists = [];
   List<String> userList = [];
   // ignore: prefer_typing_uninitialized_variables
   var conn;
@@ -26,7 +27,7 @@ class MySQL {
     dbConnectExec = true;
   }
 
-  Future manipulateCalcDB(List<String> formula, double displayedNumber, String userId) async {
+  Future manipulateCalcDB(String formula, double displayedNumber, String userId) async {
     if (dbConnectExec == true && displayedNumber != double.infinity) {
       sql = '''
           SELECT 
@@ -45,10 +46,11 @@ class MySQL {
 
       // Query the database using a parameterized query
       var results = (await conn.query(sql));
-      lists.clear();
+      resultLists.clear();
+      formulaLists.clear();
       for (var row in results) {
-        lists.add('${row[0]}');
-        lists.add('${row[1]}');
+        formulaLists.add('${row[0]}');
+        resultLists.add('${row[1]}');
       }
     }
   }
