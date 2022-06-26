@@ -28,7 +28,7 @@ class MySQL {
   }
 
   Future manipulateCalcDB(String formula, double displayedNumber, String userId) async {
-    if (dbConnectExec == true && displayedNumber != double.infinity) {
+    if (dbConnectExec == true && displayedNumber != double.infinity || dbConnectExec == true && displayedNumber.toString() != "NaN") {
       sql = '''
           SELECT 
             formula, result 
