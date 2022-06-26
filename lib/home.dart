@@ -283,7 +283,6 @@ class _MyHomePageState extends State<MyHomePage> {
   // 最終的な計算結果を求めるメソッド
   void _finalCalculation() {
     setState(() {
-      // 
       if (_previousOperation == "×" || _previousOperation == "÷") {
         double result = (_previousOperation == "×")
             ? _previousValue * _setCurrentNumber
