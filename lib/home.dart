@@ -67,11 +67,6 @@ class _MyHomePageState extends State<MyHomePage> {
   //桁区切り実装用
   intl.NumberFormat formatter = intl.NumberFormat('#,###.########', 'en_US');
 
-  // 最初の値を保持する変数
-  double _firstNum = 0;
-
-  // enum値を示す変数
-  OperatorType? _operatorType;
   // 画面上部に出力するメッセージ
   String _cheeringMessage = "";
   // String型に変換したdisplayedNumber
@@ -86,57 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       if (text == ".") {
       _decimalFlag = true;
-      //入力値が"="の時
-    } else if (text == "=") {
-      if (_previousOperation == "×" || _previousOperation == "÷") {
-        double result = (_previousOperation == "×")
-            ? _previousValue * _setCurrentNumber
-            : _previousValue / _setCurrentNumber;
-
-        displayedNumber = (_memorialOperation == "-")
-            ? _memorialValue - result
-            : _memorialValue + result;
-      } else if (_memorialOperation == "+") {
-        displayedNumber = _memorialValue + _setCurrentNumber;
-      } else {
-        displayedNumber = _memorialValue - _setCurrentNumber;
-      }
-
-      clear();
-      //入力された値が"×", "÷"の時
-    } else if (text == "×" || text == "÷") {
-      //初めて"×", "÷"が押されたならば
-      if (_previousOperation == "") {
-        _previousValue = _setCurrentNumber;
-      } else if (_previousOperation == "×") {
-        //直前にセットされた値と新しく入力された値を掛ける
-        _previousValue = _previousValue * _setCurrentNumber;
-      } else {
-        _previousValue = _previousValue / _setCurrentNumber;
-      }
-      displayedNumber = _previousValue;
-      _setCurrentNumber = 0;
-      _previousOperation = text;
-    } else if (text == "+" || text == "-") {
-      if (_previousOperation == "×") {
-        _memorialValue = _previousValue * _setCurrentNumber;
-        _previousValue = 0;
-        _previousOperation = "";
-      } else if (_previousOperation == "÷") {
-        _memorialValue = _previousValue / _setCurrentNumber;
-        _previousValue = 0;
-        _previousOperation = "";
-      } else if (_memorialOperation == "") {
-        _memorialValue = _setCurrentNumber;
-      } else if (_memorialOperation == "+") {
-        _memorialValue = _memorialValue + _setCurrentNumber;
-      } else if (_memorialOperation == "-") {
-        _memorialValue = _memorialValue - _setCurrentNumber;
-      }
-
-      displayedNumber = _memorialValue;
-      _setCurrentNumber = 0;
-      _memorialOperation = text;
     } else {
       int degit = getDegit(_setCurrentNumber);
 
@@ -145,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //処理なし
       } else if (_decimalFlag) {
         _numAfterPoint++;
-        if (displayedNumber > 0) {
+        if (displayedNumber >= 0) {
           _setCurrentNumber =
             _setCurrentNumber + int.parse(text) * math.pow(0.1, _numAfterPoint);
         } else {
@@ -166,20 +110,10 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       //最終的にgetDisplayTextメソッドに送る数値を決定
       displayedNumber = _setCurrentNumber;
+
     }
     });
     
-  }
-
-  //各値をクリアするメソッド
-  void clear() {
-    setState(() {
-    _setCurrentNumber = 0;
-    _previousValue = 0;
-    _memorialValue = 0;
-    _previousOperation = "";
-    _memorialOperation = "";
-    });
   }
 
   //画面表示用テキスト作成メソッド(小数点以下がない時は-1を取得)
@@ -188,7 +122,10 @@ class _MyHomePageState extends State<MyHomePage> {
     if (numAfterPoint != -1) {
       int intPart = value.toInt();
       // 初めて"."が押された時
-      if (_numAfterPoint == 0) {
+      if (_decimalFlag == false && text.contains(".")) {
+        return formatter.format(value);
+      }
+      else if (numAfterPoint == 0) {
         return formatter.format(value) + ".";
         // "1.003などへの対応
       } else if (intPart == value) {
@@ -240,7 +177,9 @@ class _MyHomePageState extends State<MyHomePage> {
               0, displayedNumberAsString.length - 1);
         }
         // 小数点数で、「.000~」となるときは、double型に変換すると一気に「0.0」まで戻ってしまう
-        displayedNumber = double.parse(displayedNumberAsString);
+        if (displayedNumberAsString != "-") {
+          displayedNumber = double.parse(displayedNumberAsString);
+        }
         _numAfterPoint--;
         _decimalFlag = false;
       }
@@ -263,6 +202,73 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // 押された演算子の種類に応じて_firstNumに_setCurrentNumberを格納するメソッド
+  void _halfwayCalculation(String operatorType) {
+    setState(() {
+      if (operatorType == "×" || operatorType == "÷") {
+      if (_previousOperation == "") {
+        _previousValue = _setCurrentNumber;
+      } else if (_previousOperation == "×") {
+        //直前にセットされた値と新しく入力された値を掛ける
+        _previousValue = _previousValue * _setCurrentNumber;
+      } else {
+        _previousValue = _previousValue / _setCurrentNumber;
+      }
+      displayedNumber = _previousValue;
+      _setCurrentNumber = 0;
+      _numAfterPoint = 0;
+      _decimalFlag = false;
+      _previousOperation = operatorType;
+    } else if (operatorType == "+" || operatorType == "-") {
+      if (_previousOperation == "×") {
+        _memorialValue = _previousValue * _setCurrentNumber;
+        _previousValue = 0;
+        _previousOperation = "";
+      } else if (_previousOperation == "÷") {
+        _memorialValue = _previousValue / _setCurrentNumber;
+        _previousValue = 0;
+        _previousOperation = "";
+      } else if (_memorialOperation == "") {
+        _memorialValue = _setCurrentNumber;
+      } else if (_memorialOperation == "+") {
+        _memorialValue = _memorialValue + _setCurrentNumber;
+      } else if (_memorialOperation == "-") {
+        _memorialValue = _memorialValue - _setCurrentNumber;
+      }
+
+      displayedNumber = _memorialValue;
+      _setCurrentNumber = 0;
+      _numAfterPoint = 0;
+      _decimalFlag = false;
+      _memorialOperation = operatorType;
+    }
+    });
+  }
+
+  void _finalCalculation() {
+    setState(() {
+      if (_previousOperation == "×" || _previousOperation == "÷") {
+        double result = (_previousOperation == "×")
+            ? _previousValue * _setCurrentNumber
+            : _previousValue / _setCurrentNumber;
+
+        displayedNumber = (_memorialOperation == "-")
+            ? _memorialValue - result
+            : _memorialValue + result;
+      } else if (_memorialOperation == "+") {
+        displayedNumber = _memorialValue + _setCurrentNumber;
+      } else {
+        displayedNumber = _memorialValue - _setCurrentNumber;
+      }
+      
+      _setCurrentNumber = displayedNumber;
+      _previousValue = 0;
+      _memorialValue = 0;
+      _numAfterPoint = 0;
+      _decimalFlag = false;
+    });
+  }
+  
   // ボタンをウィジェット化
   Widget button(String text, Color colorButton, Color colorText) {
     return SizedBox(
@@ -282,9 +288,23 @@ class _MyHomePageState extends State<MyHomePage> {
               case "Del":
                 _deleteOnesPlace();
                 break;
+              case "÷":
+                _halfwayCalculation("÷");
+                break;
+              case "×":
+                _halfwayCalculation("×");
+                break;
+              case "-":
+                _halfwayCalculation("-");
+                break;
+              case "+":
+                _halfwayCalculation("+");
+                break;
+              case "=":
+                _finalCalculation();
+                break;
               default:
-                  _cheeringMessage = "";
-                  input(text);
+                input(text);
                 break;
             }
           },
@@ -486,12 +506,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ));
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(EnumProperty<OperatorType>('_operatorType', _operatorType));
   }
 }
 
