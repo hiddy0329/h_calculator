@@ -236,13 +236,30 @@ class _MyHomePageState extends State<MyHomePage> {
       _decimalFlag = false;
       _previousOperation = operatorType;
       formula += ' ${_previousOperation} ';
+      // (1 × 4 + 2 × 4 + ...)などの掛け算の結果を足し合わせていく場合に対応
     } else if (operatorType == "+" || operatorType == "-") {
       if (_previousOperation == "×") {
-        _memorialValue = _previousValue * _setCurrentNumber;
+        if (operatorType == "+" && _memorialOperation == "-") {
+           _memorialValue = (_memorialValue - (_previousValue * _setCurrentNumber)).abs();
+        } else if (operatorType == "+") {
+          _memorialValue += (_previousValue * _setCurrentNumber);
+        } else if (operatorType == "-" && _memorialOperation == "+") {
+          _memorialValue += (_previousValue * _setCurrentNumber);
+        } else {
+          _memorialValue = (_memorialValue - (_previousValue * _setCurrentNumber)).abs();
+        }
         _previousValue = 0;
         _previousOperation = "";
       } else if (_previousOperation == "÷") {
-        _memorialValue = _previousValue / _setCurrentNumber;
+        if (operatorType == "+" && _memorialOperation == "-") {
+          _memorialValue = (_memorialValue - (_previousValue / _setCurrentNumber)).abs();
+        } else if (operatorType == "+") {
+          _memorialValue += (_previousValue / _setCurrentNumber);
+        } else if (operatorType == "-" && _memorialOperation == "+") {
+          _memorialValue += (_previousValue / _setCurrentNumber);
+        } else {
+          _memorialValue = (_memorialValue - (_previousValue / _setCurrentNumber)).abs();
+        }
         _previousValue = 0;
         _previousOperation = "";
       } else if (_memorialOperation == "") {
@@ -266,11 +283,12 @@ class _MyHomePageState extends State<MyHomePage> {
   // 最終的な計算結果を求めるメソッド
   void _finalCalculation() {
     setState(() {
+      // 
       if (_previousOperation == "×" || _previousOperation == "÷") {
         double result = (_previousOperation == "×")
             ? _previousValue * _setCurrentNumber
             : _previousValue / _setCurrentNumber;
-
+        
         displayedNumber = (_memorialOperation == "-")
             ? _memorialValue - result
             : _memorialValue + result;
