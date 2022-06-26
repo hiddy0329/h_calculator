@@ -19,9 +19,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-//演算子をenum値で定義
-enum OperatorType { add, sub, multi, div }
-
 class _MyHomePageState extends State<MyHomePage> {
   // ボタンの色設定
   static Color colorMain = Colors.indigo.shade100;
@@ -209,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       if (_previousOperation == "×") {
       _cheeringMessage = "Excellent!";
-    } else if (displayedNumber == double.infinity) {
+    } else if (displayedNumber == double.infinity || displayedNumber.toString() == 'NaN') {
       _cheeringMessage = "Sorry, but I have no idea...";
     } else if (_previousOperation == "÷") {
       _cheeringMessage = "Perfect!";
@@ -217,7 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _cheeringMessage = "Nice Job!";
     } else {
       _cheeringMessage = "Awesome!";
-    }
+    } 
     });
   }
 
@@ -371,16 +368,26 @@ class _MyHomePageState extends State<MyHomePage> {
           // 計算履歴表示ボタンエリア
           appBar: AppBar(
             backgroundColor: colorNum,
+            toolbarHeight: 75.0,
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextButton(
-                  child: Text("<< logout",
-                      style: TextStyle(
-                          fontFamily: font, fontSize: 20, color: colorText)),
-                  onPressed: () {
-                    Navigator.pop(context, widget.userId);
-                  },
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "${widget.username.toUpperCase()}'s calculator",
+                      style: TextStyle(color: colorFunc),
+                    ),
+                    TextButton(
+                      child: Text("<< logout",
+                          style: TextStyle(
+                              fontFamily: font, fontSize: 20, color: colorText)),
+                      onPressed: () {
+                        Navigator.pop(context, widget.userId);
+                      },
+                    ),
+                  ],
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(

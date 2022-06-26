@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage(this.formulaLists, this.resultLists, this.username, {Key? key}) : super(key: key);
@@ -60,7 +61,7 @@ class HistoryPage extends StatelessWidget {
         backgroundColor: Colors.indigo[100],
         appBar: AppBar(
           title: FittedBox(
-              child: Text("$username's history <DESC>",
+              child: Text("${username.toUpperCase()}'s history <DESC>",
                   style: const TextStyle(
                     fontFamily: font,
                   ))),
@@ -83,6 +84,9 @@ class HistoryPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
+                    Icon(FontAwesomeIcons.solidFaceSadTear,
+                    size: 50.0,
+                    ),
                     Text(
                       "You have no history...",
                       style: TextStyle(fontFamily: font, fontSize: 25.0),
