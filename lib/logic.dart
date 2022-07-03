@@ -25,13 +25,17 @@ class Logic {
 
   // 実際に表示する値を形成するメソッド
   String _buildDisplayedNum(double _displayedNumber, double num) {
+    // 値の整数部分を用意する
     int intPart = _setCurrentNumber.toInt();
+    // 値を文字列化したものを用意する
     String _displayedNumberAsString = _displayedNumber.toString();
     // 0で割った場合はエラーメッセージを表示
     if (_operatorType == OperatorType.div && _setCurrentNumber == 0.0) {
       return _divErrorMessage = "Sorry, but I have no idea...";
+    // 入力値からその整数部分を引いた値が0ならば
     } else if (_decimalFlag && _setCurrentNumber - intPart == 0.0) {
       return _displayedNumber.toStringAsFixed(_numAfterPoint);
+    // 
     } else if (_displayedNumberAsString[_displayedNumberAsString.length - 1] !=
             "0" &&
         num == 0.0) {
