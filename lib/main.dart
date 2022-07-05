@@ -153,23 +153,23 @@ class _LoginPageState extends State<LoginPage> {
   // ユーザー登録用のメソッド
   Future _checkRegistration() async {
     _navigateNextPage();
-    // if (_mysql.dbConnectExec == true) {
-    //   if (newUsername != "" && newPassword != "") {
-    //     await _mysql.insertUserDB(newUsername, newPassword);
-    //     await _mysql.selectFromUserDB(newUsername, newPassword);
-    //     // Shared_preferenceを利用してユーザーidを端末保存
-    //     await setUserInfo();
-    //     await getUserInfo();
-    //     _navigateNextPage();
-    //     setState(() {
-    //       _clearText();
-    //     });
-    //   } else {
-    //     _getErrorMessage();
-    //   }
-    // } else {
-    //   _getErrorMessage();
-    // }
+    if (_mysql.dbConnectExec == true) {
+      if (newUsername != "" && newPassword != "") {
+        await _mysql.insertUserDB(newUsername, newPassword);
+        await _mysql.selectFromUserDB(newUsername, newPassword);
+        // Shared_preferenceを利用してユーザーidを端末保存
+        await setUserInfo();
+        await getUserInfo();
+        _navigateNextPage();
+        setState(() {
+          _clearText();
+        });
+      } else {
+        _getErrorMessage();
+      }
+    } else {
+      _getErrorMessage();
+    }
   }
 
   @override

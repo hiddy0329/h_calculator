@@ -557,6 +557,3 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 }
-
-//TODO イコールを押した時のデータベース登録
-//TODO ロジックの切り分け
