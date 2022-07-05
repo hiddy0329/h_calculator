@@ -25,6 +25,8 @@ class MySQL {
     ));
 
     dbConnectExec = true;
+
+    return conn;
   }
 
   Future manipulateCalcDB(String formula, double displayedNumber, String userId) async {
