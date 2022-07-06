@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'encryption.dart';
 import 'home.dart';
 import 'mysql.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'shared_pref.dart';
+import 'hashing.dart';
 
 void main() {
   runApp(const LoginApp());
 }
 
 class LoginApp extends StatelessWidget {
-  const LoginApp({Key? key}) : super(key: key);
+  const LoginApp({key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -23,7 +25,7 @@ class LoginApp extends StatelessWidget {
 }
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -33,46 +35,35 @@ class _LoginPageState extends State<LoginPage> {
   // フォント設定
   static const String font = 'Roboto';
 
-  final _nameController = TextEditingController();
+  // 入力値追跡用コントローラー(username)
+  final TextEditingController _nameController = TextEditingController();
 
-  final _passwordController = TextEditingController();
+  // 入力値追跡用コントローラー(password)
+  final TextEditingController _passwordController = TextEditingController();
 
+  // MySQLクラスのインスタンス
   final MySQL _mysql = MySQL();
 
+  // dbボタンが押されたかどうか判定するbool値
   bool _databaseButtonPressed = false;
 
-  // 新規usernameを代入する変数
-  String newUsername = "";
-  // 新規passwordを代入する変数
-  String newPassword = "";
-  // ログインusernameを代入する変数
-  String loginUsername = "";
-  // ログインpasswordを代入する変数
-  String loginPassword = "";
+  // 暗号化したパスワード
+  var hashedPassword = "";
+
   // ユーザーに関するエラーメッセージ
   String _errorMessage = "";
 
+  // 端末保存用のログイン中のユーザーid
   String currentUserId = "";
 
+  // 端末保存用のログイン中のユーザー名
   String currentUsername = "";
 
-  late SharedPreferences prefs;
+  // パスワードが目隠しされたかどうか判定するbool値
+  bool _isObscure = true;
 
-  Future<void> setInstance() async {
-    prefs = await SharedPreferences.getInstance();
-  }
-
-  Future<void> setUserInfo() async {
-    await prefs.setString('userId', _mysql.userList[0]);
-    await prefs.setString('username', _mysql.userList[1]);
-  }
-
-  Future<void> getUserInfo() async {
-    setState(() {
-      currentUserId = prefs.getString('userId')!;
-      currentUsername = prefs.getString('username')!;
-    });
-  }
+  // SharedPrefクラスのインスタンス
+  final SharedPref _sharedPref = SharedPref();
 
   // データベースボタンの色を変えるメソッド
   void _changeDbButtonColor() {
@@ -87,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
       if (_mysql.dbConnectExec == true) {
         _errorMessage = "Username and Password is invalid.";
       } else {
-        _errorMessage = "Please connect app to the database!";
+        _errorMessage = "Please connect with the database!";
       }
     });
   }
@@ -97,14 +88,11 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _nameController.clear();
       _passwordController.clear();
-      loginUsername = "";
-      loginPassword = "";
-      newUsername = "";
-      newPassword = "";
       _errorMessage = "";
     });
   }
 
+  // 電卓画面への遷移メソッド
   void _navigateNextPage() {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -129,41 +117,41 @@ class _LoginPageState extends State<LoginPage> {
 
   // ログイン判定のためのメソッド
   Future _checkLogin() async {
-    _navigateNextPage();
-    // if (_mysql.dbConnectExec == true) {
-    //   await _mysql.selectFromUserDB(loginUsername, loginPassword);
-    //   // ログインできるかどうかの判定
-    //   if (_mysql.userList.contains(loginUsername) &&
-    //       _mysql.userList.contains(loginPassword)) {
-    //     // Shared_preferenceを利用してユーザーidを端末保存
-    //     await setUserInfo();
-    //     await getUserInfo();
-    //     _navigateNextPage();
-    //     setState(() {
-    //       _clearText();
-    //     });
-    //   } else {
-    //     _getErrorMessage();
-    //   }
-    // } else {
-    //   _getErrorMessage();
-    // }
+    if (_mysql.dbConnectExec == true &&
+        _nameController.text != "" &&
+        _passwordController.text != "") {
+      hashedPassword = Hashing.main(_passwordController.text);
+      await _mysql.selectFromUserDB(_nameController.text, hashedPassword);
+      // ログインできるかどうかの判定
+      if (_mysql.userList.contains(_nameController.text) &&
+          _mysql.userList.contains(hashedPassword)) {
+        // Shared_preferenceを利用してユーザーidを端末保存
+        await _sharedPref.setPrefUserData(_mysql.userList);
+        currentUserId = await _sharedPref.getUserIdFromPref();
+        currentUsername = await _sharedPref.getUsernameFromPref();
+        _navigateNextPage();
+        _clearText();
+      } else {
+        _getErrorMessage();
+      }
+    } else {
+      _getErrorMessage();
+    }
   }
 
   // ユーザー登録用のメソッド
   Future _checkRegistration() async {
-    _navigateNextPage();
     if (_mysql.dbConnectExec == true) {
-      if (newUsername != "" && newPassword != "") {
-        await _mysql.insertUserDB(newUsername, newPassword);
-        await _mysql.selectFromUserDB(newUsername, newPassword);
+      if (_nameController.text != "" && _passwordController.text != "") {
+        hashedPassword = Hashing.main(_passwordController.text);
+        await _mysql.insertUserDB(_nameController.text, hashedPassword);
+        await _mysql.selectFromUserDB(_nameController.text, hashedPassword);
+        await _sharedPref.setPrefUserData(_mysql.userList);
         // Shared_preferenceを利用してユーザーidを端末保存
-        await setUserInfo();
-        await getUserInfo();
+        currentUserId = await _sharedPref.getUserIdFromPref();
+        currentUsername = await _sharedPref.getUsernameFromPref();
         _navigateNextPage();
-        setState(() {
-          _clearText();
-        });
+        _clearText();
       } else {
         _getErrorMessage();
       }
@@ -175,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    setInstance();
+    _sharedPref.setPrefInstance();
   }
 
   @override
@@ -229,26 +217,28 @@ class _LoginPageState extends State<LoginPage> {
               TextField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  hintText: 'Username',
+                  hintText: 'Enter Username',
                   hintStyle: TextStyle(fontFamily: font),
                 ),
-                onChanged: (context) {
-                  newUsername = context;
-                  loginUsername = context;
-                },
               ),
               const SizedBox(height: 12.0),
               // Passwordフィールド
-              TextField(
+              TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  hintText: 'Password',
-                  hintStyle: TextStyle(fontFamily: font),
+                obscureText: _isObscure,
+                decoration: InputDecoration(
+                  hintText: 'Enter Password',
+                  hintStyle: const TextStyle(fontFamily: font),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                        _isObscure ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
+                  ),
                 ),
-                onChanged: (context) {
-                  newPassword = context;
-                  loginPassword = context;
-                },
               ),
               ButtonBar(
                 children: <Widget>[
@@ -258,7 +248,7 @@ class _LoginPageState extends State<LoginPage> {
                       _clearText();
                     },
                     child: const Text(
-                      'Cancel',
+                      'Clear',
                       style: TextStyle(fontFamily: font),
                     ),
                   ),
@@ -268,7 +258,6 @@ class _LoginPageState extends State<LoginPage> {
                       primary: Colors.blueGrey[900],
                     ),
                     onPressed: () {
-                      // _mysql.dbConnect();
                       _checkLogin();
                     },
                     child: const Text(
