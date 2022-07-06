@@ -25,12 +25,24 @@ class MySQL {
     ));
 
     dbConnectExec = true;
-
-    return conn;
   }
 
-  Future manipulateCalcDB(String formula, double displayedNumber, String userId) async {
-    if (dbConnectExec == true && displayedNumber != double.infinity || dbConnectExec == true && displayedNumber.toString() != "NaN") {
+  Future manipulateCalcDB(
+      String formula, double displayedNumber, String userId) async {
+    if (dbConnectExec == true) {
+      if (displayedNumber != double.infinity &&
+          displayedNumber.toString() != "NaN") {
+
+        // Insert some data
+        var result = await conn.query(
+            'insert into calculations (formula, result, user_id) values (?, ?, ?)',
+            [formula, displayedNumber.toString(), userId]);
+      }
+    }
+  }
+
+  Future selectFromCalcDB(String userId) async {
+    if (dbConnectExec == true) {
       sql = '''
           SELECT 
             formula, result 
@@ -41,19 +53,15 @@ class MySQL {
           ORDER BY id DESC LIMIT 10
     ''';
 
-      // Insert some data
-      var result = await conn.query(
-          'insert into calculations (formula, result, user_id) values (?, ?, ?)',
-          [formula, displayedNumber.toString(), userId]);
+     // Query the database using a parameterized query
+        var results = (await conn.query(sql));
+        resultLists.clear();
+        formulaLists.clear();
+        for (var row in results) {
+          formulaLists.add('${row[0]}');
+          resultLists.add('${row[1]}');
+        }
 
-      // Query the database using a parameterized query
-      var results = (await conn.query(sql));
-      resultLists.clear();
-      formulaLists.clear();
-      for (var row in results) {
-        formulaLists.add('${row[0]}');
-        resultLists.add('${row[1]}');
-      }
     }
   }
 
@@ -90,20 +98,3 @@ class MySQL {
     }
   }
 }
-
-
-
-  // // Update some data
-  // await conn.query(
-  //     'update Users set password=? where username=?', ['222222aaa', 'Bob']);
-
-  // // Query again database using a parameterized query
-  // var results2 = await conn.query(
-  //     'select username, email, password from Users where id = ?',
-  //     [result.insertId]);
-  // for (var row in results2) {
-  //   print('username: ${row[0]}, email: ${row[1]} password: ${row[2]}');
-  // }
-
-  // Finally, close the connection
-
