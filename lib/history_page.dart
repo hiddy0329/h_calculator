@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HistoryPage extends StatelessWidget {
-  const HistoryPage(this.formulaLists, this.resultLists, this.username, {Key? key}) : super(key: key);
+  const HistoryPage(this.formulaLists, this.resultLists, this.username,
+      {Key? key})
+      : super(key: key);
   final List<String> formulaLists;
   final List<String> resultLists;
   final String username;
@@ -16,35 +18,25 @@ class HistoryPage extends StatelessWidget {
         children: [
           Row(children: <Widget>[
             Expanded(
-              flex: 3,
+              flex: 2,
               child: Text(
                 text,
-                style: const TextStyle(fontFamily: font, fontSize: 22),
+                style: const TextStyle(fontFamily: font, fontSize: 13),
               ),
             ),
             Expanded(
               flex: 1,
               child: Text(
                 colon,
-                style: const TextStyle(fontFamily: font, fontSize: 20),
+                style: const TextStyle(fontFamily: font, fontSize: 15),
               ),
             ),
             Expanded(
-              flex: 2,
+              flex: 7,
               child: Text(
-                formula,
-                style: const TextStyle(fontFamily: font, fontSize: 20),
-              ),
-            ),
-            Expanded(
-              flex: 4,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 5.0),
-                child: Text(
-                  result,
-                  style: const TextStyle(fontFamily: font, fontSize: 24),
-                  textAlign: TextAlign.end,
-                ),
+                '${formula}  ${result}',
+                style: const TextStyle(fontFamily: font, fontSize: 14),
+                textAlign: TextAlign.end,
               ),
             )
           ]),
@@ -75,8 +67,8 @@ class HistoryPage extends StatelessWidget {
                     shrinkWrap: true,
                     itemCount: formulaLists.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return historyArea(
-                          "history${index + 1}", ":", formulaLists[index], resultLists[index]);
+                      return historyArea("history${index + 1}", ":",
+                          formulaLists[index], resultLists[index]);
                     }),
               )
             : Padding(
@@ -84,8 +76,9 @@ class HistoryPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(FontAwesomeIcons.solidFaceSadTear,
-                    size: 50.0,
+                    Icon(
+                      FontAwesomeIcons.solidFaceSadTear,
+                      size: 50.0,
                     ),
                     Text(
                       "You have no history...",
