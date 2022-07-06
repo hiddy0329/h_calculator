@@ -1,49 +1,288 @@
+import 'dart:math' as math;
 import 'package:intl/intl.dart' as intl;
-import 'dart:math' as Math;
-
-//演算子をenum値で定義
-enum OperatorType { add, sub, multi, div }
 
 class Logic {
-   // 値を格納する変数
-  double _setCurrentNumber = 0;
+  String _text = "0";
+
+  get text => _text;
+
+  // 画面に出力できる最大値
+  static const MAX_DEGIT = 9;
+
   // 値を表示する変数
-  double _displayedNumber = 0;
-  // 最初の値を保持する変数
-  double _firstNum = 0;
-  // 小数点ボタンが押されたかどうかを示す変数
+  double displayedNumber = 0;
+
+  // 現在値を格納する変数
+  double _setCurrentNumber = 0;
+
+  //掛け算・割り算の結果を保持する変数
+  double _temporaryNumber = 0;
+
+  //掛け算・割り算の結果を保持する変数
+  double _previousValue = 0;
+
+  //掛け算・割り算の演算子を記録しておく変数
+  String _multiDivOperator = "";
+
+  //足し算・引き算の演算子を記録しておく変数
+  String _addSubOperator = "";
+
+  // 小数点ボタンが押されたかどうかを示すbool値
   bool _decimalFlag = false;
+
   // "."が押された後の数値の数をカウントする変数
   int _numAfterPoint = 0;
-  // enum値を示す変数
-  OperatorType? _operatorType;
-  // 0で数値を割った場合のエラーメッセージ
-  String _divErrorMessage = "";
+
+  //桁区切り実装用
+  intl.NumberFormat formatter = intl.NumberFormat('#,###.########', 'en_US');
+
   // 画面上部に出力するメッセージ
-  String _cheeringMessage = "";
+  String cheeringMessage = "";
 
+  // String型に変換したdisplayedNumber
+  String displayedNumberAsString = "";
 
-  // 実際に表示する値を形成するメソッド
-  String _buildDisplayedNum(double _displayedNumber, double num) {
-    // 値の整数部分を用意する
-    int intPart = _setCurrentNumber.toInt();
-    // 値を文字列化したものを用意する
-    String _displayedNumberAsString = _displayedNumber.toString();
-    // 0で割った場合はエラーメッセージを表示
-    if (_operatorType == OperatorType.div && _setCurrentNumber == 0.0) {
-      return _divErrorMessage = "Sorry, but I have no idea...";
-    // 入力値からその整数部分を引いた値が0ならば
-    } else if (_decimalFlag && _setCurrentNumber - intPart == 0.0) {
-      return _displayedNumber.toStringAsFixed(_numAfterPoint);
-    // 
-    } else if (_displayedNumberAsString[_displayedNumberAsString.length - 1] !=
-            "0" &&
-        num == 0.0) {
-      return _displayedNumber.toStringAsFixed(_numAfterPoint);
-    } else if (_displayedNumber == _displayedNumber.toInt()) {
-      return _displayedNumber.toInt().toString();
+  // データベースに保存する計算式の部分を格納するリスト
+  String formula = "";
+
+  //入力値をセットするメソッド
+  void input(String text) {
+    _text = text;
+    if (_text == ".") {
+      _decimalFlag = true;
+      formula += '${_text}';
     } else {
-      return _displayedNumber.toString();
+      int degit = getDegit(_setCurrentNumber);
+
+      // 整数部分と少数部分を合わせて表示桁数が9桁以上は表示させない
+      if (degit + _numAfterPoint == MAX_DEGIT) {
+        //処理なし
+      } else if (_decimalFlag) {
+        _numAfterPoint++;
+        if (displayedNumber >= 0) {
+          _setCurrentNumber = _setCurrentNumber +
+              int.parse(_text) * math.pow(0.1, _numAfterPoint);
+        } else {
+          _setCurrentNumber = _setCurrentNumber -
+              int.parse(_text) * math.pow(0.1, _numAfterPoint);
+        }
+        // 整数を入力した時、初期状態だった時
+      } else if (_setCurrentNumber == 0) {
+        _setCurrentNumber = double.parse(_text);
+        // 連続入力対応
+      } else {
+        if (displayedNumber > 0) {
+          _setCurrentNumber = _setCurrentNumber * 10 + double.parse(_text);
+        } else {
+          _setCurrentNumber = _setCurrentNumber * 10 - double.parse(_text);
+        }
+      }
+      //最終的にgetDisplayTextメソッドに送る数値を決定
+      displayedNumber = _setCurrentNumber;
+      cheeringMessage = "";
+      formula += '${_text}';
     }
+
+    if (_decimalFlag) {
+      _text = getDisplayText(displayedNumber, numAfterPoint: _numAfterPoint);
+    } else {
+      _text = getDisplayText(displayedNumber);
+    }
+  }
+
+  //画面表示用テキスト作成メソッド(小数点以下がない時は-1を取得)
+  String getDisplayText(double value, {int numAfterPoint = -1}) {
+    // 少数の時
+    if (numAfterPoint != -1) {
+      int intPart = value.toInt();
+      // 初めて"."が押された時
+      if (_decimalFlag == false && text.contains(".")) {
+        return formatter.format(value);
+      } else if (numAfterPoint == 0) {
+        return formatter.format(value) + ".";
+        // "1.003などへの対応
+      } else if (intPart == value) {
+        //文字列の足し算のため、「333」+「0.0」は「3330.0」となってしまうのを回避する
+        return formatter.format(intPart) +
+            (value - intPart).toStringAsFixed(numAfterPoint).substring(1);
+      }
+    }
+    // 単なる整数の時
+    return formatter.format(value);
+  }
+
+  //桁数を取得するメソッド
+  int getDegit(double value) {
+    int i = 0;
+    if (value > 0) {
+      for (; 10 <= value; i++) {
+        value = value / 10;
+      }
+    } else {
+      for (; value <= -10; i++) {
+        value = value / 10;
+      }
+    }
+    return i + 1;
+  }
+
+  //画面上の数値をオールクリアするメソッド
+  void clearNum(text) {
+    _text = text;
+    _text = "0";
+    displayedNumber = 0;
+    _setCurrentNumber = 0;
+    _previousValue = 0;
+    _temporaryNumber = 0;
+    _multiDivOperator = "";
+    _addSubOperator = "";
+    _decimalFlag = false;
+    cheeringMessage = "All Clear!";
+    _numAfterPoint = 0;
+    formula = "";
+  }
+
+  // 数値の符号を切り替えるメソッド
+  void invertNum(text) {
+    _text = text;
+    displayedNumber = -displayedNumber;
+    _setCurrentNumber = -_setCurrentNumber;
+
+    if (_decimalFlag) {
+      _text = getDisplayText(displayedNumber, numAfterPoint: _numAfterPoint);
+    } else {
+      _text = getDisplayText(displayedNumber);
+    }
+  }
+
+  // 一の位の数値を削除していくメソッド
+  void deleteOnesPlace() {
+    String displayedNumberAsString = displayedNumber.toString();
+    // double型を文字列に変えたため、整数も小数もデフォルトで文字数が「3」になる
+    if (displayedNumberAsString.length > 3) {
+      // 単なる整数値の時（例：24.0)
+      if (displayedNumberAsString[displayedNumberAsString.length - 1] == "0") {
+        displayedNumberAsString = displayedNumberAsString.substring(
+            0, displayedNumberAsString.length - 3);
+      } else {
+        displayedNumberAsString = displayedNumberAsString.substring(
+            0, displayedNumberAsString.length - 1);
+      }
+      // 小数点数で、「.000~」となるときは、double型に変換すると一気に「0.0」まで戻ってしまう
+      if (displayedNumberAsString != "-") {
+        displayedNumber = double.parse(displayedNumberAsString);
+      }
+      _numAfterPoint--;
+      _decimalFlag = false;
+
+      _text = getDisplayText(displayedNumber);
+    }
+  }
+
+  // 計算結果に応じて表示するメッセージを切り替えるメソッド
+  void getCheeringMessage() {
+    if (_multiDivOperator == "×") {
+      cheeringMessage = "Excellent!";
+    } else if (displayedNumber == double.infinity ||
+        displayedNumber.toString() == 'NaN') {
+      cheeringMessage = "Sorry, but I have no idea...";
+    } else if (_multiDivOperator == "÷") {
+      cheeringMessage = "Perfect!";
+    } else if (_addSubOperator == "+") {
+      cheeringMessage = "Nice Job!";
+    } else {
+      cheeringMessage = "Awesome!";
+    }
+  }
+
+  // 途中計算を行うメソッド
+  void halfwayCalculation(String operatorType) {
+    if (operatorType == "×" || operatorType == "÷") {
+      if (_multiDivOperator == "") {
+        _previousValue = _setCurrentNumber;
+      } else if (_multiDivOperator == "×") {
+        //直前にセットされた値と新しく入力された値を掛ける
+        _previousValue = _previousValue * _setCurrentNumber;
+      } else {
+        _previousValue = _previousValue / _setCurrentNumber;
+      }
+      displayedNumber = _previousValue;
+      _setCurrentNumber = 0;
+      _numAfterPoint = 0;
+      _decimalFlag = false;
+      _multiDivOperator = operatorType;
+      formula += '${_multiDivOperator}';
+      // (1 × 4 + 2 × 4 + ...)などの掛け算の結果を足し合わせていく場合に対応
+    } else if (operatorType == "+" || operatorType == "-") {
+      if (_multiDivOperator == "×") {
+        if (operatorType == "+" && _addSubOperator == "-") {
+          _temporaryNumber =
+              (_temporaryNumber - (_previousValue * _setCurrentNumber)).abs();
+        } else if (operatorType == "+") {
+          _temporaryNumber += (_previousValue * _setCurrentNumber);
+        } else if (operatorType == "-" && _addSubOperator == "+") {
+          _temporaryNumber += (_previousValue * _setCurrentNumber);
+        } else {
+          _temporaryNumber =
+              (_temporaryNumber - (_previousValue * _setCurrentNumber)).abs();
+        }
+        _previousValue = 0;
+        _multiDivOperator = "";
+      } else if (_multiDivOperator == "÷") {
+        if (operatorType == "+" && _addSubOperator == "-") {
+          _temporaryNumber =
+              (_temporaryNumber - (_previousValue / _setCurrentNumber)).abs();
+        } else if (operatorType == "+") {
+          _temporaryNumber += (_previousValue / _setCurrentNumber);
+        } else if (operatorType == "-" && _addSubOperator == "+") {
+          _temporaryNumber += (_previousValue / _setCurrentNumber);
+        } else {
+          _temporaryNumber =
+              (_temporaryNumber - (_previousValue / _setCurrentNumber)).abs();
+        }
+        _previousValue = 0;
+        _multiDivOperator = "";
+      } else if (_addSubOperator == "") {
+        _temporaryNumber = _setCurrentNumber;
+      } else if (_addSubOperator == "+") {
+        _temporaryNumber = _temporaryNumber + _setCurrentNumber;
+      } else if (_addSubOperator == "-") {
+        _temporaryNumber = _temporaryNumber - _setCurrentNumber;
+      }
+
+      displayedNumber = _temporaryNumber;
+      _setCurrentNumber = 0;
+      _numAfterPoint = 0;
+      _decimalFlag = false;
+      _addSubOperator = operatorType;
+      formula += '${_addSubOperator}';
+    }
+
+    _text = getDisplayText(displayedNumber);
+  }
+
+  // 最終的な計算結果を求めるメソッド
+  void finalCalculation() {
+    if (_multiDivOperator == "×" || _multiDivOperator == "÷") {
+      double result = (_multiDivOperator == "×")
+          ? _previousValue * _setCurrentNumber
+          : _previousValue / _setCurrentNumber;
+
+      displayedNumber = (_addSubOperator == "-")
+          ? _temporaryNumber - result
+          : _temporaryNumber + result;
+    } else if (_addSubOperator == "+") {
+      displayedNumber = _temporaryNumber + _setCurrentNumber;
+    } else {
+      displayedNumber = _temporaryNumber - _setCurrentNumber;
+    }
+    getCheeringMessage();
+    _setCurrentNumber = displayedNumber;
+    _previousValue = 0;
+    _temporaryNumber = 0;
+    _numAfterPoint = 0;
+    _decimalFlag = false;
+    formula += '=';
+    _text = getDisplayText(displayedNumber);
   }
 }
