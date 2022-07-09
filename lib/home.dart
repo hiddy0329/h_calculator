@@ -54,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
               switch (text) {
                 case "AC":
                   _logic.clearNum(text);
+                  _logic.playAudio();
                   break;
                 case "+/-":
                   _logic.invertNum(text);

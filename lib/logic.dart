@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:intl/intl.dart' as intl;
+import 'package:audioplayers/audioplayers.dart';
 
 class Logic {
   String _text = "0";
@@ -284,5 +285,13 @@ class Logic {
     _decimalFlag = false;
     formula += '=';
     _text = getDisplayText(displayedNumber);
+  }
+
+  void playAudio() async{
+    final AudioCache _cache = AudioCache(
+    fixedPlayer: AudioPlayer(),
+    );
+    await _cache.load('test_audio.mp3');
+    await _cache.play('test_audio.mp3');
   }
 }
