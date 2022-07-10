@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // ボタンをウィジェット化
   Widget button(String text, Color colorButton, Color colorText) {
     return SizedBox(
-      width: text == "0" ? 195 : 94,
+      width: text == "0" ? 195 : 90,
       height: 85,
       child: Padding(
         padding: const EdgeInsets.all(1.0),
