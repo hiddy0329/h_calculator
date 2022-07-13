@@ -46,6 +46,10 @@ class Logic {
   // データベースに保存する計算式の部分を格納するリスト
   String formula = "";
 
+  bool audioPlayed = false;
+
+  final player = AudioPlayer();
+
   //入力値をセットするメソッド
   void input(String text) {
     _text = text;
@@ -288,10 +292,12 @@ class Logic {
   }
 
   void playAudio() async{
-    final AudioCache _cache = AudioCache(
-    fixedPlayer: AudioPlayer(),
-    );
-    await _cache.load('test_audio.mp3');
-    await _cache.play('test_audio.mp3');
+    if (audioPlayed == false) {
+    await player.play(AssetSource('test_audio.mp3'));
+    audioPlayed = true;
+    } else {
+      await player.stop();
+      audioPlayed = false;
+    }
   }
 }

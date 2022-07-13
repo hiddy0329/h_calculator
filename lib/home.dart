@@ -54,7 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
               switch (text) {
                 case "AC":
                   _logic.clearNum(text);
-                  _logic.playAudio();
                   break;
                 case "+/-":
                   _logic.invertNum(text);
@@ -174,6 +173,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       fontFamily: font,
                     ),
                   ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.transparent,
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _logic.playAudio();
+                      });
+                    },
+                    child: Icon(
+                      FontAwesomeIcons.music,
+                      color: colorFunc,
+                    ),),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         primary: Colors.transparent,
