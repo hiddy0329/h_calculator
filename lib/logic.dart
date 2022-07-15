@@ -48,7 +48,8 @@ class Logic {
 
   bool audioPlayed = false;
 
-  final player = AudioPlayer();
+  AudioCache _cache = AudioCache(fixedPlayer: AudioPlayer());
+  AudioPlayer? _player;
 
   //入力値をセットするメソッド
   void input(String text) {
@@ -293,10 +294,11 @@ class Logic {
 
   void playAudio() async{
     if (audioPlayed == false) {
-    await player.play(AssetSource('test_audio.mp3'));
-    audioPlayed = true;
+      await _cache.load('test_audio.mp3');
+      await _cache.play('test_audio.mp3');
+      audioPlayed = true;
     } else {
-      await player.stop();
+      await _player?.stop();
       audioPlayed = false;
     }
   }
