@@ -17,7 +17,7 @@ class MySQL {
     await dotenv.load();
     // Open a connection
     conn = await MySqlConnection.connect(ConnectionSettings(
-      host: (dotenv.env['HOST2']).toString(),
+      host: (dotenv.env['HOST1']).toString(),
       port: int.parse(dotenv.get('PORT')),
       user: (dotenv.env['USER']).toString(),
       db: (dotenv.env['DB']).toString(),
