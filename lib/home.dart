@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'constants.dart';
 import 'logic.dart';
 import 'mysql.dart';
 import 'history_page.dart';
@@ -17,15 +18,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // ボタンの色設定
-  static Color colorMain = Colors.indigo.shade100;
-  static Color colorNum = Colors.blueGrey.shade900;
-  static Color colorFunc = Colors.pinkAccent.shade200;
-  static const Color colorText = Colors.white;
-
-  // フォント設定
-  static const String font = 'Roboto';
-
   // 画面上に表示する内容を格納する変数
   String text = "";
 

@@ -4,6 +4,7 @@ import 'hashing.dart';
 import 'home.dart';
 import 'mysql.dart';
 import 'shared_pref.dart';
+import 'constants.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({key}) : super(key: key);
@@ -13,8 +14,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // フォント設定
-  static const String font = 'Roboto';
 
   // 入力値追跡用コントローラー(username)
   final TextEditingController _nameController = TextEditingController();
