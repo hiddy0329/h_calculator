@@ -9,3 +9,5 @@ const Color colorText = Colors.white;
 // フォント設定
 const String font = 'Roboto';
 
+// 画面に出力できる最大値
+const maxDigit = 9;
