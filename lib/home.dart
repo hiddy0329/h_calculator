@@ -1,10 +1,10 @@
-// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'constants.dart';
 import 'logic.dart';
 import 'mysql.dart';
 import 'history_page.dart';
+import 'logic_variables.dart';
 
 class MyHomePage extends StatefulWidget {
   final String userId;
@@ -93,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text(
               text,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: font,
                 fontWeight: FontWeight.bold,
                 fontSize: 30.0,
@@ -132,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               color: colorFunc),
                         ),
                         TextButton(
-                          child: Text("<< logout",
+                          child: const Text("<< logout",
                               style: TextStyle(
                                   fontFamily: font,
                                   fontWeight: FontWeight.bold,
@@ -155,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: colorFunc,
                       ),
                     ),
-                    Text(
+                    const Text(
                       "database on",
                       style: TextStyle(
                         fontFamily: font,
@@ -210,7 +210,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           );
                         },
-                        child: Icon(FontAwesomeIcons.clockRotateLeft)),
+                        child: const Icon(FontAwesomeIcons.clockRotateLeft)),
                   ],
                 ),
               ),
