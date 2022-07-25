@@ -10,7 +10,7 @@ class MySQL {
   // ignore: prefer_typing_uninitialized_variables
   var conn;
 
-  // mainメソッドが実行されたかどうかを判断するbool値
+  // dbConnectメソッドが実行されたかどうかを判断するbool値
   bool dbConnectExec = false;
 
   Future dbConnect() async {
