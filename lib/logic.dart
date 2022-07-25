@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:h_calculator/constants.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:audioplayers/audioplayers.dart';
 
@@ -6,9 +7,6 @@ class Logic {
   String _text = "0";
 
   get text => _text;
-
-  // 画面に出力できる最大値
-  static const MAX_DEGIT = 9;
 
   // 値を表示する変数
   double displayedNumber = 0;
@@ -58,10 +56,10 @@ class Logic {
       _decimalFlag = true;
       formula += '${_text}';
     } else {
-      int degit = getDegit(_setCurrentNumber);
+      int digit = getDigit(_setCurrentNumber);
 
       // 整数部分と少数部分を合わせて表示桁数が9桁以上は表示させない
-      if (degit + _numAfterPoint == MAX_DEGIT) {
+      if (digit + _numAfterPoint == maxDigit) {
         //処理なし
       } else if (_decimalFlag) {
         _numAfterPoint++;
@@ -86,7 +84,7 @@ class Logic {
       //最終的にgetDisplayTextメソッドに送る数値を決定
       displayedNumber = _setCurrentNumber;
       cheeringMessage = "";
-      formula += '${_text}';
+      formula += _text;
     }
 
     if (_decimalFlag) {
@@ -105,7 +103,7 @@ class Logic {
       if (_decimalFlag == false && text.contains(".")) {
         return formatter.format(value);
       } else if (numAfterPoint == 0) {
-        return formatter.format(value) + ".";
+        return "${formatter.format(value)}.";
         // "1.003などへの対応
       } else if (intPart == value) {
         //文字列の足し算のため、「333」+「0.0」は「3330.0」となってしまうのを回避する
@@ -118,7 +116,7 @@ class Logic {
   }
 
   //桁数を取得するメソッド
-  int getDegit(double value) {
+  int getDigit(double value) {
     int i = 0;
     if (value > 0) {
       for (; 10 <= value; i++) {
@@ -217,7 +215,7 @@ class Logic {
       _numAfterPoint = 0;
       _decimalFlag = false;
       _multiDivOperator = operatorType;
-      formula += '${_multiDivOperator}';
+      formula += _multiDivOperator;
       // (1 × 4 + 2 × 4 + ...)などの掛け算の結果を足し合わせていく場合に対応
     } else if (operatorType == "+" || operatorType == "-") {
       if (_multiDivOperator == "×") {
@@ -261,7 +259,7 @@ class Logic {
       _numAfterPoint = 0;
       _decimalFlag = false;
       _addSubOperator = operatorType;
-      formula += '${_addSubOperator}';
+      formula += _addSubOperator;
     }
 
     _text = getDisplayText(displayedNumber);
