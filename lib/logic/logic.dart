@@ -46,8 +46,7 @@ class Logic {
 
   bool audioPlayed = false;
 
-  AudioCache _cache = AudioCache(fixedPlayer: AudioPlayer());
-  AudioPlayer? _player;
+  final player = AudioPlayer();
 
   //入力値をセットするメソッド
   void input(String text) {
@@ -290,13 +289,12 @@ class Logic {
     _text = getDisplayText(displayedNumber);
   }
 
-  void playAudio() async{
+  Future playAudio() async{
     if (audioPlayed == false) {
-      await _cache.load('test_audio.mp3');
-      await _cache.play('test_audio.mp3');
+      await player.play(AssetSource('test_audio.mp3')); 
       audioPlayed = true;
     } else {
-      await _player?.stop();
+      await player.stop();
       audioPlayed = false;
     }
   }
