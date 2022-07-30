@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'hashing.dart';
+import '../logic/hashing.dart';
 import 'home.dart';
-import 'mysql.dart';
-import 'shared_pref.dart';
-import 'constants.dart';
+import '../logic/mysql.dart';
+import '../logic/shared_pref.dart';
+import '../components/constants.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({key}) : super(key: key);

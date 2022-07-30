@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'constants.dart';
-import 'logic.dart';
-import 'mysql.dart';
+import '../components/constants.dart';
+import '../logic/logic.dart';
+import '../logic/mysql.dart';
 import 'history_page.dart';
-import 'logic_variables.dart';
 
 class MyHomePage extends StatefulWidget {
   final String userId;

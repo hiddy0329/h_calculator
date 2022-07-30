@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'package:h_calculator/constants.dart';
+import 'package:h_calculator/components/constants.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:audioplayers/audioplayers.dart';
 
