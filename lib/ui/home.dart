@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
               primary: colorButton,
               onPrimary: colorText,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(5.0),
               ),
             ),
             child: Text(
@@ -119,10 +119,10 @@ class _MyHomePageState extends State<MyHomePage> {
         debugShowCheckedModeBanner: false,
         home: SafeArea(
           child: Scaffold(
-            backgroundColor: colorMain,
+            backgroundColor: const Color(0xFF0A0E21),
             // 計算履歴表示ボタンエリア
             appBar: AppBar(
-              backgroundColor: colorNum,
+              backgroundColor: const Color(0xFF0A0E21),
               toolbarHeight: 77.0,
               title: FittedBox(
                 child: Row(
@@ -168,18 +168,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontFamily: font,
                       ),
                     ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.transparent,
-                        elevation: 0,
-                      ),
-                      onPressed: () {
-                        _logic.playAudio();
-                      },
-                      child: Icon(
-                        FontAwesomeIcons.music,
-                        color: iconColorChange(),
-                      ),),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           primary: Colors.transparent,
@@ -241,7 +229,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Text(
                       txtResult,
                       style: TextStyle(
-                          fontFamily: font, fontSize: 75.0, color: colorNum),
+                          fontFamily: font, fontSize: 75.0, color: colorText),
                     ),
                   ),
                 ),

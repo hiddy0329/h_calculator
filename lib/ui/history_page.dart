@@ -50,14 +50,13 @@ class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.indigo[100],
         appBar: AppBar(
           title: FittedBox(
               child: Text("${username.toUpperCase()}'s history <DESC>",
                   style: const TextStyle(
                     fontFamily: font,
                   ))),
-          backgroundColor: Colors.blueGrey[900],
+          backgroundColor: Color(0xFF0A0E21),
         ),
         body: (formulaLists.isNotEmpty && resultLists.isNotEmpty)
             ? Padding(

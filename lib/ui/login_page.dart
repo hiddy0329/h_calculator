@@ -149,9 +149,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.indigo[100],
       appBar: AppBar(
-        backgroundColor: Colors.blueGrey[900],
+        backgroundColor: Color(0xFF0A0E21),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -223,7 +222,7 @@ class _LoginPageState extends State<LoginPage> {
               ButtonBar(
                 children: <Widget>[
                   TextButton(
-                    style: TextButton.styleFrom(primary: Colors.blueGrey[900]),
+                    style: TextButton.styleFrom(primary: colorText),
                     onPressed: () {
                       _clearText();
                     },
@@ -235,7 +234,7 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       side: BorderSide.none,
-                      primary: Colors.blueGrey[900],
+                      primary: colorFunc
                     ),
                     onPressed: () {
                       _checkLogin();
@@ -248,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       side: BorderSide.none,
-                      primary: Colors.blueGrey[900],
+                      primary: colorFunc,
                     ),
                     onPressed: () {
                       _checkRegistration();
