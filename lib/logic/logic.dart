@@ -288,14 +288,4 @@ class Logic {
     formula += '=';
     _text = getDisplayText(displayedNumber);
   }
-
-  Future playAudio() async{
-    if (audioPlayed == false) {
-      await player.play(AssetSource('test_audio.mp3')); 
-      audioPlayed = true;
-    } else {
-      await player.stop();
-      audioPlayed = false;
-    }
-  }
 }
